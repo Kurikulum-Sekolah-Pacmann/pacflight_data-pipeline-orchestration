@@ -1,0 +1,26 @@
+2024-03-21 11:47:04,998 - INFO - EXTRACT 'bookings.aircrafts_data' - SUCCESS.
+2024-03-21 11:47:05,005 - INFO - EXTRACT 'bookings.airports_data' - SUCCESS.
+2024-03-21 11:47:10,079 - INFO - EXTRACT 'bookings.boarding_passes' - SUCCESS.
+2024-03-21 11:47:13,868 - INFO - EXTRACT 'bookings.bookings' - SUCCESS.
+2024-03-21 11:47:14,865 - INFO - EXTRACT 'bookings.flights' - SUCCESS.
+2024-03-21 11:47:14,883 - INFO - EXTRACT 'bookings.seats' - SUCCESS.
+2024-03-21 11:47:31,299 - INFO - EXTRACT 'bookings.ticket_flights' - SUCCESS.
+2024-03-21 11:47:39,271 - INFO - EXTRACT 'bookings.tickets' - SUCCESS.
+2024-03-21 11:47:39,405 - INFO - [pid 39218] Worker Worker(salt=1597501515, workers=1, host=DESKTOP-V42S030, username=laode, pid=39218) done      Extract()
+2024-03-21 11:47:39,406 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-21 11:47:39,412 - INFO - Informed scheduler that task   Extract__99914b932b   has status   DONE
+2024-03-21 11:47:39,412 - DEBUG - Asking scheduler for work...
+2024-03-21 11:47:39,417 - DEBUG - Done
+2024-03-21 11:47:39,417 - DEBUG - There are no more tasks to run at this time
+2024-03-21 11:47:39,418 - INFO - Worker Worker(salt=1597501515, workers=1, host=DESKTOP-V42S030, username=laode, pid=39218) was stopped. Shutting down Keep-Alive thread
+2024-03-21 11:47:39,419 - INFO - 
+===== Luigi Execution Summary =====
+
+Scheduled 1 tasks of which:
+* 1 ran successfully:
+    - 1 Extract()
+
+This progress looks :) because there were no failed tasks or missing dependencies
+
+===== Luigi Execution Summary =====
+
