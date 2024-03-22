@@ -1,7 +1,7 @@
-INSERT INTO stg.bookings 
+INSERT INTO stg.flights 
     (flight_id, flight_no, scheduled_departure, scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, created_at, updated_at) 
 VALUES 
-    ('{flight_id}', '{flight_no}', '{scheduled_departure}', '{scheduled_arrival}', '{departure_airport}', '{arrival_airport}', '{status}', '{aircraft_code}', '{actual_departure}', '{actual_arrival}', '{created_at}', '{updated_at}')
+    ('{flight_id}', '{flight_no}', '{scheduled_departure}', '{scheduled_arrival}', '{departure_airport}', '{arrival_airport}', '{status}', '{aircraft_code}', {actual_departure}, {actual_arrival}, '{created_at}', '{updated_at}')
 ON CONFLICT(flight_id) 
 DO UPDATE SET
     flight_no = EXCLUDED.flight_no,
@@ -14,17 +14,17 @@ DO UPDATE SET
     actual_departure = EXCLUDED.actual_departure,
     actual_arrival = EXCLUDED.actual_arrival,
     updated_at = CASE WHEN 
-                        stg.bookings.flight_no <> EXCLUDED.flight_no
-                        OR stg.bookings.scheduled_departure <> EXCLUDED.scheduled_departure 
-                        OR stg.bookings.scheduled_arrival <> EXCLUDED.scheduled_arrival
-                        OR stg.bookings.departure_airport <> EXCLUDED.departure_
-                        OR stg.bookings.arrival_airport <> EXCLUDED.arrival_airport
-                        OR stg.bookings.status <> EXCLUDED.status
-                        OR stg.bookings.aircraft_code <> EXCLUDED.aircraft_code
-                        OR stg.bookings.actual_departure <> EXCLUDED.actual_departure
-                        OR stg.bookings.actual_arrival <> EXCLUDED.actual_arrival
+                        stg.flights.flight_no <> EXCLUDED.flight_no
+                        OR stg.flights.scheduled_departure <> EXCLUDED.scheduled_departure 
+                        OR stg.flights.scheduled_arrival <> EXCLUDED.scheduled_arrival
+                        OR stg.flights.departure_airport <> EXCLUDED.departure_airport
+                        OR stg.flights.arrival_airport <> EXCLUDED.arrival_airport
+                        OR stg.flights.status <> EXCLUDED.status
+                        OR stg.flights.aircraft_code <> EXCLUDED.aircraft_code
+                        OR stg.flights.actual_departure <> EXCLUDED.actual_departure
+                        OR stg.flights.actual_arrival <> EXCLUDED.actual_arrival
                 THEN 
                         '{current_local_time}'
                 ELSE
-                        stg.bookings.updated_at
+                        stg.flights.updated_at
                 END;

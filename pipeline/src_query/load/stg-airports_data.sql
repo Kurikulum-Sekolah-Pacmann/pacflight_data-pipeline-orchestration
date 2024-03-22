@@ -1,7 +1,7 @@
 INSERT INTO stg.airports_data 
     (airport_code, airport_name, city, coordinates, timezone, created_at, updated_at) 
 VALUES 
-    ('{airport_code}', "{airport_name}", "{city}", '{coordinates}', '{timezone}', '{created_at}', '{updated_at}')
+    ('{airport_code}', '{airport_name}', '{city}', '{coordinates}', '{timezone}', '{created_at}', '{updated_at}')
 ON CONFLICT(airport_code) 
 DO UPDATE SET
     airport_name = EXCLUDED.airport_name,
