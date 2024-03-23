@@ -1,7 +1,7 @@
 INSERT INTO stg.flights 
-    (flight_id, flight_no, scheduled_departure, scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, created_at, updated_at) 
+    (flight_id, flight_no, scheduled_departure, scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival) 
 VALUES 
-    ('{flight_id}', '{flight_no}', '{scheduled_departure}', '{scheduled_arrival}', '{departure_airport}', '{arrival_airport}', '{status}', '{aircraft_code}', {actual_departure}, {actual_arrival}, '{created_at}', '{updated_at}')
+    ('{flight_id}', '{flight_no}', '{scheduled_departure}', '{scheduled_arrival}', '{departure_airport}', '{arrival_airport}', '{status}', '{aircraft_code}', {actual_departure}, {actual_arrival})
 ON CONFLICT(flight_id) 
 DO UPDATE SET
     flight_no = EXCLUDED.flight_no,

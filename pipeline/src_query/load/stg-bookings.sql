@@ -1,7 +1,7 @@
 INSERT INTO stg.bookings 
-    (book_ref, book_date, total_amount, created_at, updated_at) 
+    (book_ref, book_date, total_amount) 
 VALUES 
-    ('{book_ref}', '{book_date}', '{total_amount}', '{created_at}', '{updated_at}')
+    ('{book_ref}', '{book_date}', '{total_amount}')
 ON CONFLICT(book_ref) 
 DO UPDATE SET
     book_date = EXCLUDED.book_date,

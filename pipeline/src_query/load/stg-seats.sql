@@ -1,7 +1,7 @@
 INSERT INTO stg.seats 
-    (aircraft_code, seat_no, fare_conditions, created_at, updated_at) 
+    (aircraft_code, seat_no, fare_conditions) 
 VALUES 
-    ('{aircraft_code}', '{seat_no}', '{fare_conditions}', '{created_at}', '{updated_at}')
+    ('{aircraft_code}', '{seat_no}', '{fare_conditions}')
 ON CONFLICT(aircraft_code, seat_no) 
 DO UPDATE SET
     fare_conditions = EXCLUDED.fare_conditions,

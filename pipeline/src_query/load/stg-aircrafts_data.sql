@@ -1,7 +1,7 @@
 INSERT INTO stg.aircrafts_data 
-    (aircraft_code, model, range, created_at, updated_at) 
+    (aircraft_code, model, range) 
 VALUES 
-    ('{aircraft_code}', '{model}', '{range}', '{created_at}', '{updated_at}')
+    ('{aircraft_code}', '{model}', '{range}')
 ON CONFLICT(aircraft_code) 
 DO UPDATE SET
     model = EXCLUDED.model,

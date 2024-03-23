@@ -1,7 +1,7 @@
 INSERT INTO stg.tickets 
-    (ticket_no, book_ref, passenger_id, passenger_name, contact_data, created_at, updated_at) 
+    (ticket_no, book_ref, passenger_id, passenger_name, contact_data) 
 VALUES 
-    ('{ticket_no}', '{book_ref}', '{passenger_id}', '{passenger_name}', '{contact_data}', '{created_at}', '{updated_at}')
+    ('{ticket_no}', '{book_ref}', '{passenger_id}', '{passenger_name}', '{contact_data}')
 ON CONFLICT(ticket_no) 
 DO UPDATE SET
     book_ref = EXCLUDED.book_ref,

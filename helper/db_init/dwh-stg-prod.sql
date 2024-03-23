@@ -5,650 +5,488 @@ CREATE SCHEMA IF NOT EXISTS stg AUTHORIZATION postgres;
 CREATE SCHEMA IF NOT EXISTS prod AUTHORIZATION postgres;
 
 ------------------------------------------------------------------------------------------------------------------------------ STAGING SCHEMA
---
--- Name: aircrafts_data; Type: TABLE; Schema: stg; Owner: postgres
---
+COMMENT ON SCHEMA stg IS 'Airlines demo database schema';
 
-CREATE TABLE stg.aircrafts_data (
-    aircraft_code character(3) NOT NULL,
-    model jsonb NOT NULL,
-    range integer NOT NULL,
-    created_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    CONSTRAINT aircrafts_range_check CHECK ((range > 0))
-);
-
-
-ALTER TABLE stg.aircrafts_data OWNER TO postgres;
-
---
--- Name: TABLE aircrafts_data; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON TABLE stg.aircrafts_data IS 'Aircrafts (internal data)';
-
-
---
--- Name: COLUMN aircrafts_data.aircraft_code; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.aircrafts_data.aircraft_code IS 'Aircraft code, IATA';
-
-
---
--- Name: COLUMN aircrafts_data.model; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.aircrafts_data.model IS 'Aircraft model';
-
-
---
--- Name: COLUMN aircrafts_data.range; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.aircrafts_data.range IS 'Maximal flying distance, km';
-
-
---
--- Name: airports_data; Type: TABLE; Schema: stg; Owner: postgres
---
-
-CREATE TABLE stg.airports_data (
-    airport_code character(3) NOT NULL,
-    airport_name jsonb NOT NULL,
-    city jsonb NOT NULL,
-    coordinates point NOT NULL,
-    timezone text NOT NULL,
-    created_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone
-);
-
-
-ALTER TABLE stg.airports_data OWNER TO postgres;
-
---
--- Name: TABLE airports_data; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON TABLE stg.airports_data IS 'Airports (internal data)';
-
-
---
--- Name: COLUMN airports_data.airport_code; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.airports_data.airport_code IS 'Airport code';
-
-
---
--- Name: COLUMN airports_data.airport_name; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.airports_data.airport_name IS 'Airport name';
-
-
---
--- Name: COLUMN airports_data.city; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.airports_data.city IS 'City';
-
-
---
--- Name: COLUMN airports_data.coordinates; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.airports_data.coordinates IS 'Airport coordinates (longitude and latitude)';
-
-
---
--- Name: COLUMN airports_data.timezone; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.airports_data.timezone IS 'Airport time zone';
-
---
--- Name: boarding_passes; Type: TABLE; Schema: stg; Owner: postgres
---
-
-CREATE TABLE stg.boarding_passes (
-    ticket_no character(13) NOT NULL,
-    flight_id integer NOT NULL,
-    boarding_no integer NOT NULL,
-    seat_no character varying(4) NOT NULL,
-    created_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone
-);
-
-
-ALTER TABLE stg.boarding_passes OWNER TO postgres;
-
---
--- Name: TABLE boarding_passes; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON TABLE stg.boarding_passes IS 'Boarding passes';
-
-
---
--- Name: COLUMN boarding_passes.ticket_no; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.boarding_passes.ticket_no IS 'Ticket number';
-
-
---
--- Name: COLUMN boarding_passes.flight_id; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.boarding_passes.flight_id IS 'Flight ID';
-
-
---
--- Name: COLUMN boarding_passes.boarding_no; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.boarding_passes.boarding_no IS 'Boarding pass number';
-
-
---
--- Name: COLUMN boarding_passes.seat_no; Type: COMMENT; Schema: stg; Owner: postgres
---
-
-COMMENT ON COLUMN stg.boarding_passes.seat_no IS 'Seat number';
-
-
---
--- Name: bookings; Type: TABLE; Schema: stg; Owner: postgres
---
-
-CREATE TABLE stg.bookings (
-    book_ref character(6) NOT NULL,
-    book_date timestamp with time zone NOT NULL,
-    total_amount numeric(10,2) NOT NULL,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone
-);
-
-
-ALTER TABLE stg.bookings OWNER TO postgres;
-
---
--- Name: TABLE bookings; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON TABLE stg.bookings IS 'Bookings';
-
-
---
--- Name: COLUMN bookings.book_ref; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.bookings.book_ref IS 'Booking number';
-
-
---
--- Name: COLUMN bookings.book_date; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.bookings.book_date IS 'Booking date';
-
-
---
--- Name: COLUMN bookings.total_amount; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.bookings.total_amount IS 'Total booking cost';
-
-
---
--- Name: flights; Type: TABLE; Schema: bookings; Owner: postgres
---
-
-CREATE TABLE stg.flights (
-    flight_id integer NOT NULL,
-    flight_no character(6) NOT NULL,
-    scheduled_departure timestamp with time zone NOT NULL,
-    scheduled_arrival timestamp with time zone NOT NULL,
-    departure_airport character(3) NOT NULL,
-    arrival_airport character(3) NOT NULL,
-    status character varying(20) NOT NULL,
-    aircraft_code character(3) NOT NULL,
-    actual_departure timestamp with time zone,
-    actual_arrival timestamp with time zone,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone,
-    CONSTRAINT flights_check CHECK ((scheduled_arrival > scheduled_departure)),
-    CONSTRAINT flights_check1 CHECK (((actual_arrival IS NULL) OR ((actual_departure IS NOT NULL) AND (actual_arrival IS NOT NULL) AND (actual_arrival > actual_departure)))),
-    CONSTRAINT flights_status_check CHECK (((status)::text = ANY (ARRAY[('On Time'::character varying)::text, ('Delayed'::character varying)::text, ('Departed'::character varying)::text, ('Arrived'::character varying)::text, ('Scheduled'::character varying)::text, ('Cancelled'::character varying)::text])))
-);
-
-
-ALTER TABLE stg.flights OWNER TO postgres;
-
---
--- Name: TABLE flights; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON TABLE stg.flights IS 'Flights';
-
-
---
--- Name: COLUMN flights.flight_id; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.flight_id IS 'Flight ID';
-
-
---
--- Name: COLUMN flights.flight_no; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.flight_no IS 'Flight number';
-
-
---
--- Name: COLUMN flights.scheduled_departure; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.scheduled_departure IS 'Scheduled departure time';
-
-
---
--- Name: COLUMN flights.scheduled_arrival; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.scheduled_arrival IS 'Scheduled arrival time';
-
-
---
--- Name: COLUMN flights.departure_airport; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.departure_airport IS 'Airport of departure';
-
-
---
--- Name: COLUMN flights.arrival_airport; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.arrival_airport IS 'Airport of arrival';
-
-
---
--- Name: COLUMN flights.status; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.status IS 'Flight status';
-
-
---
--- Name: COLUMN flights.aircraft_code; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.aircraft_code IS 'Aircraft code, IATA';
-
-
---
--- Name: COLUMN flights.actual_departure; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.actual_departure IS 'Actual departure time';
-
-
---
--- Name: COLUMN flights.actual_arrival; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.flights.actual_arrival IS 'Actual arrival time';
-
-
---
--- Name: flights_flight_id_seq; Type: SEQUENCE; Schema: bookings; Owner: postgres
---
+-- DROP SEQUENCE stg.flights_flight_id_seq;
 
 CREATE SEQUENCE stg.flights_flight_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+	MINVALUE 0
+	NO MAXVALUE
+	START 0
+	NO CYCLE;
 
+-- Permissions
 
 ALTER SEQUENCE stg.flights_flight_id_seq OWNER TO postgres;
+GRANT ALL ON SEQUENCE stg.flights_flight_id_seq TO postgres;
+-- stg.aircrafts_data definition
 
---
--- Name: flights_flight_id_seq; Type: SEQUENCE OWNED BY; Schema: bookings; Owner: postgres
---
+-- Drop table
 
-ALTER SEQUENCE stg.flights_flight_id_seq OWNED BY stg.flights.flight_id;
+-- DROP TABLE stg.aircrafts_data;
+
+CREATE TABLE stg.aircrafts_data (
+	aircraft_code bpchar(3) NOT NULL, -- Aircraft code, IATA
+	model jsonb NOT NULL, -- Aircraft model
+	"range" int4 NOT NULL, -- Maximal flying distance, km
+	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	CONSTRAINT aircrafts_pkey PRIMARY KEY (aircraft_code),
+	CONSTRAINT aircrafts_range_check CHECK ((range > 0))
+);
+COMMENT ON TABLE stg.aircrafts_data IS 'Aircrafts (internal data)';
+
+-- Column comments
+
+COMMENT ON COLUMN stg.aircrafts_data.aircraft_code IS 'Aircraft code, IATA';
+COMMENT ON COLUMN stg.aircrafts_data.model IS 'Aircraft model';
+COMMENT ON COLUMN stg.aircrafts_data."range" IS 'Maximal flying distance, km';
+
+-- Permissions
+
+ALTER TABLE stg.aircrafts_data OWNER TO postgres;
+GRANT ALL ON TABLE stg.aircrafts_data TO postgres;
 
 
---
--- Name: seats; Type: TABLE; Schema: bookings; Owner: postgres
---
+-- stg.airports_data definition
+
+-- Drop table
+
+-- DROP TABLE stg.airports_data;
+
+CREATE TABLE stg.airports_data (
+	airport_code bpchar(3) NOT NULL, -- Airport code
+	airport_name jsonb NOT NULL, -- Airport name
+	city jsonb NOT NULL, -- City
+	coordinates point NOT NULL, -- Airport coordinates (longitude and latitude)
+	timezone text NOT NULL, -- Airport time zone
+	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	CONSTRAINT airports_data_pkey PRIMARY KEY (airport_code)
+);
+COMMENT ON TABLE stg.airports_data IS 'Airports (internal data)';
+
+-- Column comments
+
+COMMENT ON COLUMN stg.airports_data.airport_code IS 'Airport code';
+COMMENT ON COLUMN stg.airports_data.airport_name IS 'Airport name';
+COMMENT ON COLUMN stg.airports_data.city IS 'City';
+COMMENT ON COLUMN stg.airports_data.coordinates IS 'Airport coordinates (longitude and latitude)';
+COMMENT ON COLUMN stg.airports_data.timezone IS 'Airport time zone';
+
+-- Permissions
+
+ALTER TABLE stg.airports_data OWNER TO postgres;
+GRANT ALL ON TABLE stg.airports_data TO postgres;
+
+
+-- stg.bookings definition
+
+-- Drop table
+
+-- DROP TABLE stg.bookings;
+
+CREATE TABLE stg.bookings (
+	book_ref bpchar(6) NOT NULL, -- Booking number
+	book_date timestamptz NOT NULL, -- Booking date
+	total_amount numeric(10, 2) NOT NULL, -- Total booking cost
+	created_at timestamp NULL,
+	updated_at timestamp NULL,
+	CONSTRAINT bookings_pkey PRIMARY KEY (book_ref)
+);
+COMMENT ON TABLE stg.bookings IS 'Bookings';
+
+-- Column comments
+
+COMMENT ON COLUMN stg.bookings.book_ref IS 'Booking number';
+COMMENT ON COLUMN stg.bookings.book_date IS 'Booking date';
+COMMENT ON COLUMN stg.bookings.total_amount IS 'Total booking cost';
+
+-- Permissions
+
+ALTER TABLE stg.bookings OWNER TO postgres;
+GRANT ALL ON TABLE stg.bookings TO postgres;
+
+
+-- stg.flights definition
+
+-- Drop table
+
+-- DROP TABLE stg.flights;
+
+CREATE TABLE stg.flights (
+	flight_id serial4 NOT NULL, -- Flight ID
+	flight_no bpchar(6) NOT NULL, -- Flight number
+	scheduled_departure timestamptz NOT NULL, -- Scheduled departure time
+	scheduled_arrival timestamptz NOT NULL, -- Scheduled arrival time
+	departure_airport bpchar(3) NOT NULL, -- Airport of departure
+	arrival_airport bpchar(3) NOT NULL, -- Airport of arrival
+	status varchar(20) NOT NULL, -- Flight status
+	aircraft_code bpchar(3) NOT NULL, -- Aircraft code, IATA
+	actual_departure timestamptz NULL, -- Actual departure time
+	actual_arrival timestamptz NULL, -- Actual arrival time
+	created_at timestamp NULL,
+	updated_at timestamp NULL,
+	CONSTRAINT flights_check CHECK ((scheduled_arrival > scheduled_departure)),
+	CONSTRAINT flights_check1 CHECK (((actual_arrival IS NULL) OR ((actual_departure IS NOT NULL) AND (actual_arrival IS NOT NULL) AND (actual_arrival > actual_departure)))),
+	CONSTRAINT flights_flight_no_scheduled_departure_key UNIQUE (flight_no, scheduled_departure),
+	CONSTRAINT flights_pkey PRIMARY KEY (flight_id),
+	CONSTRAINT flights_status_check CHECK (((status)::text = ANY (ARRAY[('On Time'::character varying)::text, ('Delayed'::character varying)::text, ('Departed'::character varying)::text, ('Arrived'::character varying)::text, ('Scheduled'::character varying)::text, ('Cancelled'::character varying)::text]))),
+	CONSTRAINT flights_aircraft_code_fkey FOREIGN KEY (aircraft_code) REFERENCES stg.aircrafts_data(aircraft_code),
+	CONSTRAINT flights_arrival_airport_fkey FOREIGN KEY (arrival_airport) REFERENCES stg.airports_data(airport_code),
+	CONSTRAINT flights_departure_airport_fkey FOREIGN KEY (departure_airport) REFERENCES stg.airports_data(airport_code)
+);
+COMMENT ON TABLE stg.flights IS 'Flights';
+
+-- Column comments
+
+COMMENT ON COLUMN stg.flights.flight_id IS 'Flight ID';
+COMMENT ON COLUMN stg.flights.flight_no IS 'Flight number';
+COMMENT ON COLUMN stg.flights.scheduled_departure IS 'Scheduled departure time';
+COMMENT ON COLUMN stg.flights.scheduled_arrival IS 'Scheduled arrival time';
+COMMENT ON COLUMN stg.flights.departure_airport IS 'Airport of departure';
+COMMENT ON COLUMN stg.flights.arrival_airport IS 'Airport of arrival';
+COMMENT ON COLUMN stg.flights.status IS 'Flight status';
+COMMENT ON COLUMN stg.flights.aircraft_code IS 'Aircraft code, IATA';
+COMMENT ON COLUMN stg.flights.actual_departure IS 'Actual departure time';
+COMMENT ON COLUMN stg.flights.actual_arrival IS 'Actual arrival time';
+
+-- Permissions
+
+ALTER TABLE stg.flights OWNER TO postgres;
+GRANT ALL ON TABLE stg.flights TO postgres;
+
+
+-- stg.seats definition
+
+-- Drop table
+
+-- DROP TABLE stg.seats;
 
 CREATE TABLE stg.seats (
-    aircraft_code character(3) NOT NULL,
-    seat_no character varying(4) NOT NULL,
-    fare_conditions character varying(10) NOT NULL,
-    created_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    CONSTRAINT seats_fare_conditions_check CHECK (((fare_conditions)::text = ANY (ARRAY[('Economy'::character varying)::text, ('Comfort'::character varying)::text, ('Business'::character varying)::text])))
+	aircraft_code bpchar(3) NOT NULL, -- Aircraft code, IATA
+	seat_no varchar(4) NOT NULL, -- Seat number
+	fare_conditions varchar(10) NOT NULL, -- Travel class
+	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	CONSTRAINT seats_fare_conditions_check CHECK (((fare_conditions)::text = ANY (ARRAY[('Economy'::character varying)::text, ('Comfort'::character varying)::text, ('Business'::character varying)::text]))),
+	CONSTRAINT seats_pkey PRIMARY KEY (aircraft_code, seat_no),
+	CONSTRAINT seats_aircraft_code_fkey FOREIGN KEY (aircraft_code) REFERENCES stg.aircrafts_data(aircraft_code) ON DELETE CASCADE
 );
-
-
-ALTER TABLE stg.seats OWNER TO postgres;
-
---
--- Name: TABLE seats; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
 COMMENT ON TABLE stg.seats IS 'Seats';
 
-
---
--- Name: COLUMN seats.aircraft_code; Type: COMMENT; Schema: bookings; Owner: postgres
---
+-- Column comments
 
 COMMENT ON COLUMN stg.seats.aircraft_code IS 'Aircraft code, IATA';
-
-
---
--- Name: COLUMN seats.seat_no; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
 COMMENT ON COLUMN stg.seats.seat_no IS 'Seat number';
-
-
---
--- Name: COLUMN seats.fare_conditions; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
 COMMENT ON COLUMN stg.seats.fare_conditions IS 'Travel class';
 
+-- Permissions
 
---
--- Name: ticket_flights; Type: TABLE; Schema: bookings; Owner: postgres
---
-
-CREATE TABLE stg.ticket_flights (
-    ticket_no character(13) NOT NULL,
-    flight_id integer NOT NULL,
-    fare_conditions character varying(10) NOT NULL,
-    amount numeric(10,2) NOT NULL,
-    created_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    CONSTRAINT ticket_flights_amount_check CHECK ((amount >= (0)::numeric)),
-    CONSTRAINT ticket_flights_fare_conditions_check CHECK (((fare_conditions)::text = ANY (ARRAY[('Economy'::character varying)::text, ('Comfort'::character varying)::text, ('Business'::character varying)::text])))
-);
+ALTER TABLE stg.seats OWNER TO postgres;
+GRANT ALL ON TABLE stg.seats TO postgres;
 
 
-ALTER TABLE stg.ticket_flights OWNER TO postgres;
+-- stg.tickets definition
 
---
--- Name: TABLE ticket_flights; Type: COMMENT; Schema: bookings; Owner: postgres
---
+-- Drop table
 
-COMMENT ON TABLE stg.ticket_flights IS 'Flight segment';
-
-
---
--- Name: COLUMN ticket_flights.ticket_no; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.ticket_flights.ticket_no IS 'Ticket number';
-
-
---
--- Name: COLUMN ticket_flights.flight_id; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.ticket_flights.flight_id IS 'Flight ID';
-
-
---
--- Name: COLUMN ticket_flights.fare_conditions; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.ticket_flights.fare_conditions IS 'Travel class';
-
-
---
--- Name: COLUMN ticket_flights.amount; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
-COMMENT ON COLUMN stg.ticket_flights.amount IS 'Travel cost';
-
-
---
--- Name: tickets; Type: TABLE; Schema: bookings; Owner: postgres
---
+-- DROP TABLE stg.tickets;
 
 CREATE TABLE stg.tickets (
-    ticket_no character(13) NOT NULL,
-    book_ref character(6) NOT NULL,
-    passenger_id character varying(20) NOT NULL,
-    passenger_name text NOT NULL,
-    contact_data jsonb,
-    created_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2017-01-01 07:00:00'::timestamp without time zone
+	ticket_no bpchar(13) NOT NULL, -- Ticket number
+	book_ref bpchar(6) NOT NULL, -- Booking number
+	passenger_id varchar(20) NOT NULL, -- Passenger ID
+	passenger_name text NOT NULL, -- Passenger name
+	contact_data jsonb NULL, -- Passenger contact information
+	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	CONSTRAINT tickets_pkey PRIMARY KEY (ticket_no),
+	CONSTRAINT tickets_book_ref_fkey FOREIGN KEY (book_ref) REFERENCES stg.bookings(book_ref)
 );
-
-
-ALTER TABLE stg.tickets OWNER TO postgres;
-
---
--- Name: TABLE tickets; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
 COMMENT ON TABLE stg.tickets IS 'Tickets';
 
-
---
--- Name: COLUMN tickets.ticket_no; Type: COMMENT; Schema: bookings; Owner: postgres
---
+-- Column comments
 
 COMMENT ON COLUMN stg.tickets.ticket_no IS 'Ticket number';
-
-
---
--- Name: COLUMN tickets.book_ref; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
 COMMENT ON COLUMN stg.tickets.book_ref IS 'Booking number';
-
-
---
--- Name: COLUMN tickets.passenger_id; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
 COMMENT ON COLUMN stg.tickets.passenger_id IS 'Passenger ID';
-
-
---
--- Name: COLUMN tickets.passenger_name; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
 COMMENT ON COLUMN stg.tickets.passenger_name IS 'Passenger name';
-
-
---
--- Name: COLUMN tickets.contact_data; Type: COMMENT; Schema: bookings; Owner: postgres
---
-
 COMMENT ON COLUMN stg.tickets.contact_data IS 'Passenger contact information';
 
+-- Permissions
 
---
--- Name: flights flight_id; Type: DEFAULT; Schema: bookings; Owner: postgres
---
+ALTER TABLE stg.tickets OWNER TO postgres;
+GRANT ALL ON TABLE stg.tickets TO postgres;
 
-ALTER TABLE ONLY stg.flights ALTER COLUMN flight_id SET DEFAULT nextval('stg.flights_flight_id_seq'::regclass);
 
+-- stg.ticket_flights definition
 
---
--- Name: flights_flight_id_seq; Type: SEQUENCE SET; Schema: bookings; Owner: postgres
---
+-- Drop table
 
-SELECT pg_catalog.setval('stg.flights_flight_id_seq', 33121, true);
+-- DROP TABLE stg.ticket_flights;
 
+CREATE TABLE stg.ticket_flights (
+	ticket_no bpchar(13) NOT NULL, -- Ticket number
+	flight_id int4 NOT NULL, -- Flight ID
+	fare_conditions varchar(10) NOT NULL, -- Travel class
+	amount numeric(10, 2) NOT NULL, -- Travel cost
+	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	CONSTRAINT ticket_flights_amount_check CHECK ((amount >= (0)::numeric)),
+	CONSTRAINT ticket_flights_fare_conditions_check CHECK (((fare_conditions)::text = ANY (ARRAY[('Economy'::character varying)::text, ('Comfort'::character varying)::text, ('Business'::character varying)::text]))),
+	CONSTRAINT ticket_flights_pkey PRIMARY KEY (ticket_no, flight_id),
+	CONSTRAINT ticket_flights_flight_id_fkey FOREIGN KEY (flight_id) REFERENCES stg.flights(flight_id),
+	CONSTRAINT ticket_flights_ticket_no_fkey FOREIGN KEY (ticket_no) REFERENCES stg.tickets(ticket_no)
+);
+COMMENT ON TABLE stg.ticket_flights IS 'Flight segment';
 
---
--- Name: aircrafts_data aircrafts_pkey; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
+-- Column comments
 
-ALTER TABLE ONLY stg.aircrafts_data
-    ADD CONSTRAINT aircrafts_pkey PRIMARY KEY (aircraft_code);
+COMMENT ON COLUMN stg.ticket_flights.ticket_no IS 'Ticket number';
+COMMENT ON COLUMN stg.ticket_flights.flight_id IS 'Flight ID';
+COMMENT ON COLUMN stg.ticket_flights.fare_conditions IS 'Travel class';
+COMMENT ON COLUMN stg.ticket_flights.amount IS 'Travel cost';
 
+-- Permissions
 
---
--- Name: airports_data airports_data_pkey; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.airports_data
-    ADD CONSTRAINT airports_data_pkey PRIMARY KEY (airport_code);
-
-
---
--- Name: boarding_passes boarding_passes_flight_id_boarding_no_key; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.boarding_passes
-    ADD CONSTRAINT boarding_passes_flight_id_boarding_no_key UNIQUE (flight_id, boarding_no);
-
-
---
--- Name: boarding_passes boarding_passes_flight_id_seat_no_key; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.boarding_passes
-    ADD CONSTRAINT boarding_passes_flight_id_seat_no_key UNIQUE (flight_id, seat_no);
-
-
---
--- Name: boarding_passes boarding_passes_pkey; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.boarding_passes
-    ADD CONSTRAINT boarding_passes_pkey PRIMARY KEY (ticket_no, flight_id);
-
-
---
--- Name: bookings bookings_pkey; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.bookings
-    ADD CONSTRAINT bookings_pkey PRIMARY KEY (book_ref);
-
-
---
--- Name: flights flights_flight_no_scheduled_departure_key; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.flights
-    ADD CONSTRAINT flights_flight_no_scheduled_departure_key UNIQUE (flight_no, scheduled_departure);
-
-
---
--- Name: flights flights_pkey; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.flights
-    ADD CONSTRAINT flights_pkey PRIMARY KEY (flight_id);
-
-
---
--- Name: seats seats_pkey; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.seats
-    ADD CONSTRAINT seats_pkey PRIMARY KEY (aircraft_code, seat_no);
-
-
---
--- Name: ticket_flights ticket_flights_pkey; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.ticket_flights
-    ADD CONSTRAINT ticket_flights_pkey PRIMARY KEY (ticket_no, flight_id);
-
-
---
--- Name: tickets tickets_pkey; Type: CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.tickets
-    ADD CONSTRAINT tickets_pkey PRIMARY KEY (ticket_no);
-
-
---
--- Name: boarding_passes boarding_passes_ticket_no_fkey; Type: FK CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.boarding_passes
-    ADD CONSTRAINT boarding_passes_ticket_no_fkey FOREIGN KEY (ticket_no, flight_id) REFERENCES stg.ticket_flights(ticket_no, flight_id);
-
-
---
--- Name: flights flights_aircraft_code_fkey; Type: FK CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.flights
-    ADD CONSTRAINT flights_aircraft_code_fkey FOREIGN KEY (aircraft_code) REFERENCES stg.aircrafts_data(aircraft_code);
-
-
---
--- Name: flights flights_arrival_airport_fkey; Type: FK CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.flights
-    ADD CONSTRAINT flights_arrival_airport_fkey FOREIGN KEY (arrival_airport) REFERENCES stg.airports_data(airport_code);
-
-
---
--- Name: flights flights_departure_airport_fkey; Type: FK CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.flights
-    ADD CONSTRAINT flights_departure_airport_fkey FOREIGN KEY (departure_airport) REFERENCES stg.airports_data(airport_code);
-
-
---
--- Name: seats seats_aircraft_code_fkey; Type: FK CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.seats
-    ADD CONSTRAINT seats_aircraft_code_fkey FOREIGN KEY (aircraft_code) REFERENCES stg.aircrafts_data(aircraft_code) ON DELETE CASCADE;
-
-
---
--- Name: ticket_flights ticket_flights_flight_id_fkey; Type: FK CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.ticket_flights
-    ADD CONSTRAINT ticket_flights_flight_id_fkey FOREIGN KEY (flight_id) REFERENCES stg.flights(flight_id);
-
-
---
--- Name: ticket_flights ticket_flights_ticket_no_fkey; Type: FK CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.ticket_flights
-    ADD CONSTRAINT ticket_flights_ticket_no_fkey FOREIGN KEY (ticket_no) REFERENCES stg.tickets(ticket_no);
-
-
---
--- Name: tickets tickets_book_ref_fkey; Type: FK CONSTRAINT; Schema: bookings; Owner: postgres
---
-
-ALTER TABLE ONLY stg.tickets
-    ADD CONSTRAINT tickets_book_ref_fkey FOREIGN KEY (book_ref) REFERENCES stg.bookings(book_ref);
-
-
---
--- PostgreSQL database dump complete
---
+ALTER TABLE stg.ticket_flights OWNER TO postgres;
+GRANT ALL ON TABLE stg.ticket_flights TO postgres;
+
+
+-- stg.boarding_passes definition
+
+-- Drop table
+
+-- DROP TABLE stg.boarding_passes;
+
+CREATE TABLE stg.boarding_passes (
+	ticket_no bpchar(13) NOT NULL, -- Ticket number
+	flight_id int4 NOT NULL, -- Flight ID
+	boarding_no int4 NOT NULL, -- Boarding pass number
+	seat_no varchar(4) NOT NULL, -- Seat number
+	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+	CONSTRAINT boarding_passes_flight_id_boarding_no_key UNIQUE (flight_id, boarding_no),
+	CONSTRAINT boarding_passes_flight_id_seat_no_key UNIQUE (flight_id, seat_no),
+	CONSTRAINT boarding_passes_pkey PRIMARY KEY (ticket_no, flight_id),
+	CONSTRAINT boarding_passes_ticket_no_fkey FOREIGN KEY (ticket_no,flight_id) REFERENCES stg.ticket_flights(ticket_no,flight_id)
+);
+COMMENT ON TABLE stg.boarding_passes IS 'Boarding passes';
+
+-- Column comments
+
+COMMENT ON COLUMN stg.boarding_passes.ticket_no IS 'Ticket number';
+COMMENT ON COLUMN stg.boarding_passes.flight_id IS 'Flight ID';
+COMMENT ON COLUMN stg.boarding_passes.boarding_no IS 'Boarding pass number';
+COMMENT ON COLUMN stg.boarding_passes.seat_no IS 'Seat number';
+
+-- Permissions
+
+ALTER TABLE stg.boarding_passes OWNER TO postgres;
+GRANT ALL ON TABLE stg.boarding_passes TO postgres;
+
+
+-- stg.aircrafts source
+
+CREATE OR REPLACE VIEW stg.aircrafts
+AS SELECT aircraft_code,
+    model ->> bookings.lang() AS model,
+    range
+   FROM bookings.aircrafts_data ml;
+
+COMMENT ON VIEW stg.aircrafts IS 'Aircrafts';
+COMMENT ON COLUMN stg.aircrafts.aircraft_code IS 'Aircraft code, IATA';
+COMMENT ON COLUMN stg.aircrafts.model IS 'Aircraft model';
+COMMENT ON COLUMN stg.aircrafts."range" IS 'Maximal flying distance, km';
+
+-- Permissions
+
+ALTER TABLE stg.aircrafts OWNER TO postgres;
+GRANT ALL ON TABLE stg.aircrafts TO postgres;
+
+
+-- stg.airports source
+
+CREATE OR REPLACE VIEW stg.airports
+AS SELECT airport_code,
+    airport_name ->> bookings.lang() AS airport_name,
+    city ->> bookings.lang() AS city,
+    coordinates,
+    timezone
+   FROM bookings.airports_data ml;
+
+COMMENT ON VIEW stg.airports IS 'Airports';
+COMMENT ON COLUMN stg.airports.airport_code IS 'Airport code';
+COMMENT ON COLUMN stg.airports.airport_name IS 'Airport name';
+COMMENT ON COLUMN stg.airports.city IS 'City';
+COMMENT ON COLUMN stg.airports.coordinates IS 'Airport coordinates (longitude and latitude)';
+COMMENT ON COLUMN stg.airports.timezone IS 'Airport time zone';
+
+-- Permissions
+
+ALTER TABLE stg.airports OWNER TO postgres;
+GRANT ALL ON TABLE stg.airports TO postgres;
+
+
+-- stg.flights_v source
+
+CREATE OR REPLACE VIEW stg.flights_v
+AS SELECT f.flight_id,
+    f.flight_no,
+    f.scheduled_departure,
+    timezone(dep.timezone, f.scheduled_departure) AS scheduled_departure_local,
+    f.scheduled_arrival,
+    timezone(arr.timezone, f.scheduled_arrival) AS scheduled_arrival_local,
+    f.scheduled_arrival - f.scheduled_departure AS scheduled_duration,
+    f.departure_airport,
+    dep.airport_name AS departure_airport_name,
+    dep.city AS departure_city,
+    f.arrival_airport,
+    arr.airport_name AS arrival_airport_name,
+    arr.city AS arrival_city,
+    f.status,
+    f.aircraft_code,
+    f.actual_departure,
+    timezone(dep.timezone, f.actual_departure) AS actual_departure_local,
+    f.actual_arrival,
+    timezone(arr.timezone, f.actual_arrival) AS actual_arrival_local,
+    f.actual_arrival - f.actual_departure AS actual_duration
+   FROM bookings.flights f,
+    bookings.airports dep,
+    bookings.airports arr
+  WHERE f.departure_airport = dep.airport_code AND f.arrival_airport = arr.airport_code;
+
+COMMENT ON VIEW stg.flights_v IS 'Flights (extended)';
+COMMENT ON COLUMN stg.flights_v.flight_id IS 'Flight ID';
+COMMENT ON COLUMN stg.flights_v.flight_no IS 'Flight number';
+COMMENT ON COLUMN stg.flights_v.scheduled_departure IS 'Scheduled departure time';
+COMMENT ON COLUMN stg.flights_v.scheduled_departure_local IS 'Scheduled departure time, local time at the point of departure';
+COMMENT ON COLUMN stg.flights_v.scheduled_arrival IS 'Scheduled arrival time';
+COMMENT ON COLUMN stg.flights_v.scheduled_arrival_local IS 'Scheduled arrival time, local time at the point of destination';
+COMMENT ON COLUMN stg.flights_v.scheduled_duration IS 'Scheduled flight duration';
+COMMENT ON COLUMN stg.flights_v.departure_airport IS 'Deprature airport code';
+COMMENT ON COLUMN stg.flights_v.departure_airport_name IS 'Departure airport name';
+COMMENT ON COLUMN stg.flights_v.departure_city IS 'City of departure';
+COMMENT ON COLUMN stg.flights_v.arrival_airport IS 'Arrival airport code';
+COMMENT ON COLUMN stg.flights_v.arrival_airport_name IS 'Arrival airport name';
+COMMENT ON COLUMN stg.flights_v.arrival_city IS 'City of arrival';
+COMMENT ON COLUMN stg.flights_v.status IS 'Flight status';
+COMMENT ON COLUMN stg.flights_v.aircraft_code IS 'Aircraft code, IATA';
+COMMENT ON COLUMN stg.flights_v.actual_departure IS 'Actual departure time';
+COMMENT ON COLUMN stg.flights_v.actual_departure_local IS 'Actual departure time, local time at the point of departure';
+COMMENT ON COLUMN stg.flights_v.actual_arrival IS 'Actual arrival time';
+COMMENT ON COLUMN stg.flights_v.actual_arrival_local IS 'Actual arrival time, local time at the point of destination';
+COMMENT ON COLUMN stg.flights_v.actual_duration IS 'Actual flight duration';
+
+-- Permissions
+
+ALTER TABLE stg.flights_v OWNER TO postgres;
+GRANT ALL ON TABLE stg.flights_v TO postgres;
+
+
+-- stg.routes source
+
+CREATE OR REPLACE VIEW stg.routes
+AS WITH f3 AS (
+         SELECT f2.flight_no,
+            f2.departure_airport,
+            f2.arrival_airport,
+            f2.aircraft_code,
+            f2.duration,
+            array_agg(f2.days_of_week) AS days_of_week
+           FROM ( SELECT f1.flight_no,
+                    f1.departure_airport,
+                    f1.arrival_airport,
+                    f1.aircraft_code,
+                    f1.duration,
+                    f1.days_of_week
+                   FROM ( SELECT flights.flight_no,
+                            flights.departure_airport,
+                            flights.arrival_airport,
+                            flights.aircraft_code,
+                            flights.scheduled_arrival - flights.scheduled_departure AS duration,
+                            to_char(flights.scheduled_departure, 'ID'::text)::integer AS days_of_week
+                           FROM bookings.flights) f1
+                  GROUP BY f1.flight_no, f1.departure_airport, f1.arrival_airport, f1.aircraft_code, f1.duration, f1.days_of_week
+                  ORDER BY f1.flight_no, f1.departure_airport, f1.arrival_airport, f1.aircraft_code, f1.duration, f1.days_of_week) f2
+          GROUP BY f2.flight_no, f2.departure_airport, f2.arrival_airport, f2.aircraft_code, f2.duration
+        )
+ SELECT f3.flight_no,
+    f3.departure_airport,
+    dep.airport_name AS departure_airport_name,
+    dep.city AS departure_city,
+    f3.arrival_airport,
+    arr.airport_name AS arrival_airport_name,
+    arr.city AS arrival_city,
+    f3.aircraft_code,
+    f3.duration,
+    f3.days_of_week
+   FROM f3,
+    bookings.airports dep,
+    bookings.airports arr
+  WHERE f3.departure_airport = dep.airport_code AND f3.arrival_airport = arr.airport_code;
+
+COMMENT ON VIEW stg.routes IS 'Routes';
+COMMENT ON COLUMN stg.routes.flight_no IS 'Flight number';
+COMMENT ON COLUMN stg.routes.departure_airport IS 'Code of airport of departure';
+COMMENT ON COLUMN stg.routes.departure_airport_name IS 'Name of airport of departure';
+COMMENT ON COLUMN stg.routes.departure_city IS 'City of departure';
+COMMENT ON COLUMN stg.routes.arrival_airport IS 'Code of airport of arrival';
+COMMENT ON COLUMN stg.routes.arrival_airport_name IS 'Name of airport of arrival';
+COMMENT ON COLUMN stg.routes.arrival_city IS 'City of arrival';
+COMMENT ON COLUMN stg.routes.aircraft_code IS 'Aircraft code, IATA';
+COMMENT ON COLUMN stg.routes.duration IS 'Scheduled duration of flight';
+COMMENT ON COLUMN stg.routes.days_of_week IS 'Days of week on which flights are scheduled';
+
+-- Permissions
+
+ALTER TABLE stg.routes OWNER TO postgres;
+GRANT ALL ON TABLE stg.routes TO postgres;
+
+
+
+-- DROP FUNCTION stg.lang();
+
+CREATE OR REPLACE FUNCTION bookings.lang()
+ RETURNS text
+ LANGUAGE plpgsql
+ STABLE
+AS $function$
+BEGIN
+  RETURN current_setting('bookings.lang');
+EXCEPTION
+  WHEN undefined_object THEN
+    RETURN NULL;
+END;
+$function$
+;
+
+-- Permissions
+
+ALTER FUNCTION stg.lang() OWNER TO postgres;
+GRANT ALL ON FUNCTION stg.lang() TO postgres;
+
+-- DROP FUNCTION stg.now();
+
+CREATE OR REPLACE FUNCTION bookings.now()
+ RETURNS timestamp with time zone
+ LANGUAGE sql
+ IMMUTABLE
+AS $function$SELECT '2017-08-15 18:00:00'::TIMESTAMP AT TIME ZONE 'Europe/Moscow';$function$
+;
+
+COMMENT ON FUNCTION stg.now() IS 'Point in time according to which the data are generated';
+
+-- Permissions
+
+ALTER FUNCTION stg.now() OWNER TO postgres;
+GRANT ALL ON FUNCTION stg.now() TO postgres;
+
+
+-- Permissions
+
+GRANT ALL ON SCHEMA stg TO postgres;
 
 
 --------------------------------------------------------------------------------------------------------------------------------- FINAL SCHEMA
