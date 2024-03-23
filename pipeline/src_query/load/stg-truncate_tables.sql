@@ -1,0 +1,8 @@
+TRUNCATE TABLE stg.boarding_passes CASCADE;
+TRUNCATE TABLE stg.ticket_flights CASCADE ;
+TRUNCATE TABLE stg.tickets CASCADE;
+TRUNCATE TABLE stg.bookings CASCADE;
+TRUNCATE TABLE stg.flights CASCADE;
+TRUNCATE TABLE stg.seats CASCADE;
+TRUNCATE TABLE stg.aircrafts_data CASCADE;
+TRUNCATE TABLE stg.airports_data CASCADE;

@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- CREATE SCHEMA FOR STAGING & FINAL(production)
 CREATE SCHEMA IF NOT EXISTS stg AUTHORIZATION postgres;
-CREATE SCHEMA IF NOT EXISTS prod AUTHORIZATION postgres;
+CREATE SCHEMA IF NOT EXISTS final AUTHORIZATION postgres;
 
 ------------------------------------------------------------------------------------------------------------------------------ STAGING SCHEMA
 COMMENT ON SCHEMA stg IS 'Airlines demo database schema';
@@ -287,212 +287,10 @@ ALTER TABLE stg.boarding_passes OWNER TO postgres;
 GRANT ALL ON TABLE stg.boarding_passes TO postgres;
 
 
--- stg.aircrafts source
-
-CREATE OR REPLACE VIEW stg.aircrafts
-AS SELECT aircraft_code,
-    model ->> bookings.lang() AS model,
-    range
-   FROM bookings.aircrafts_data ml;
-
-COMMENT ON VIEW stg.aircrafts IS 'Aircrafts';
-COMMENT ON COLUMN stg.aircrafts.aircraft_code IS 'Aircraft code, IATA';
-COMMENT ON COLUMN stg.aircrafts.model IS 'Aircraft model';
-COMMENT ON COLUMN stg.aircrafts."range" IS 'Maximal flying distance, km';
-
--- Permissions
-
-ALTER TABLE stg.aircrafts OWNER TO postgres;
-GRANT ALL ON TABLE stg.aircrafts TO postgres;
-
-
--- stg.airports source
-
-CREATE OR REPLACE VIEW stg.airports
-AS SELECT airport_code,
-    airport_name ->> bookings.lang() AS airport_name,
-    city ->> bookings.lang() AS city,
-    coordinates,
-    timezone
-   FROM bookings.airports_data ml;
-
-COMMENT ON VIEW stg.airports IS 'Airports';
-COMMENT ON COLUMN stg.airports.airport_code IS 'Airport code';
-COMMENT ON COLUMN stg.airports.airport_name IS 'Airport name';
-COMMENT ON COLUMN stg.airports.city IS 'City';
-COMMENT ON COLUMN stg.airports.coordinates IS 'Airport coordinates (longitude and latitude)';
-COMMENT ON COLUMN stg.airports.timezone IS 'Airport time zone';
-
--- Permissions
-
-ALTER TABLE stg.airports OWNER TO postgres;
-GRANT ALL ON TABLE stg.airports TO postgres;
-
-
--- stg.flights_v source
-
-CREATE OR REPLACE VIEW stg.flights_v
-AS SELECT f.flight_id,
-    f.flight_no,
-    f.scheduled_departure,
-    timezone(dep.timezone, f.scheduled_departure) AS scheduled_departure_local,
-    f.scheduled_arrival,
-    timezone(arr.timezone, f.scheduled_arrival) AS scheduled_arrival_local,
-    f.scheduled_arrival - f.scheduled_departure AS scheduled_duration,
-    f.departure_airport,
-    dep.airport_name AS departure_airport_name,
-    dep.city AS departure_city,
-    f.arrival_airport,
-    arr.airport_name AS arrival_airport_name,
-    arr.city AS arrival_city,
-    f.status,
-    f.aircraft_code,
-    f.actual_departure,
-    timezone(dep.timezone, f.actual_departure) AS actual_departure_local,
-    f.actual_arrival,
-    timezone(arr.timezone, f.actual_arrival) AS actual_arrival_local,
-    f.actual_arrival - f.actual_departure AS actual_duration
-   FROM bookings.flights f,
-    bookings.airports dep,
-    bookings.airports arr
-  WHERE f.departure_airport = dep.airport_code AND f.arrival_airport = arr.airport_code;
-
-COMMENT ON VIEW stg.flights_v IS 'Flights (extended)';
-COMMENT ON COLUMN stg.flights_v.flight_id IS 'Flight ID';
-COMMENT ON COLUMN stg.flights_v.flight_no IS 'Flight number';
-COMMENT ON COLUMN stg.flights_v.scheduled_departure IS 'Scheduled departure time';
-COMMENT ON COLUMN stg.flights_v.scheduled_departure_local IS 'Scheduled departure time, local time at the point of departure';
-COMMENT ON COLUMN stg.flights_v.scheduled_arrival IS 'Scheduled arrival time';
-COMMENT ON COLUMN stg.flights_v.scheduled_arrival_local IS 'Scheduled arrival time, local time at the point of destination';
-COMMENT ON COLUMN stg.flights_v.scheduled_duration IS 'Scheduled flight duration';
-COMMENT ON COLUMN stg.flights_v.departure_airport IS 'Deprature airport code';
-COMMENT ON COLUMN stg.flights_v.departure_airport_name IS 'Departure airport name';
-COMMENT ON COLUMN stg.flights_v.departure_city IS 'City of departure';
-COMMENT ON COLUMN stg.flights_v.arrival_airport IS 'Arrival airport code';
-COMMENT ON COLUMN stg.flights_v.arrival_airport_name IS 'Arrival airport name';
-COMMENT ON COLUMN stg.flights_v.arrival_city IS 'City of arrival';
-COMMENT ON COLUMN stg.flights_v.status IS 'Flight status';
-COMMENT ON COLUMN stg.flights_v.aircraft_code IS 'Aircraft code, IATA';
-COMMENT ON COLUMN stg.flights_v.actual_departure IS 'Actual departure time';
-COMMENT ON COLUMN stg.flights_v.actual_departure_local IS 'Actual departure time, local time at the point of departure';
-COMMENT ON COLUMN stg.flights_v.actual_arrival IS 'Actual arrival time';
-COMMENT ON COLUMN stg.flights_v.actual_arrival_local IS 'Actual arrival time, local time at the point of destination';
-COMMENT ON COLUMN stg.flights_v.actual_duration IS 'Actual flight duration';
-
--- Permissions
-
-ALTER TABLE stg.flights_v OWNER TO postgres;
-GRANT ALL ON TABLE stg.flights_v TO postgres;
-
-
--- stg.routes source
-
-CREATE OR REPLACE VIEW stg.routes
-AS WITH f3 AS (
-         SELECT f2.flight_no,
-            f2.departure_airport,
-            f2.arrival_airport,
-            f2.aircraft_code,
-            f2.duration,
-            array_agg(f2.days_of_week) AS days_of_week
-           FROM ( SELECT f1.flight_no,
-                    f1.departure_airport,
-                    f1.arrival_airport,
-                    f1.aircraft_code,
-                    f1.duration,
-                    f1.days_of_week
-                   FROM ( SELECT flights.flight_no,
-                            flights.departure_airport,
-                            flights.arrival_airport,
-                            flights.aircraft_code,
-                            flights.scheduled_arrival - flights.scheduled_departure AS duration,
-                            to_char(flights.scheduled_departure, 'ID'::text)::integer AS days_of_week
-                           FROM bookings.flights) f1
-                  GROUP BY f1.flight_no, f1.departure_airport, f1.arrival_airport, f1.aircraft_code, f1.duration, f1.days_of_week
-                  ORDER BY f1.flight_no, f1.departure_airport, f1.arrival_airport, f1.aircraft_code, f1.duration, f1.days_of_week) f2
-          GROUP BY f2.flight_no, f2.departure_airport, f2.arrival_airport, f2.aircraft_code, f2.duration
-        )
- SELECT f3.flight_no,
-    f3.departure_airport,
-    dep.airport_name AS departure_airport_name,
-    dep.city AS departure_city,
-    f3.arrival_airport,
-    arr.airport_name AS arrival_airport_name,
-    arr.city AS arrival_city,
-    f3.aircraft_code,
-    f3.duration,
-    f3.days_of_week
-   FROM f3,
-    bookings.airports dep,
-    bookings.airports arr
-  WHERE f3.departure_airport = dep.airport_code AND f3.arrival_airport = arr.airport_code;
-
-COMMENT ON VIEW stg.routes IS 'Routes';
-COMMENT ON COLUMN stg.routes.flight_no IS 'Flight number';
-COMMENT ON COLUMN stg.routes.departure_airport IS 'Code of airport of departure';
-COMMENT ON COLUMN stg.routes.departure_airport_name IS 'Name of airport of departure';
-COMMENT ON COLUMN stg.routes.departure_city IS 'City of departure';
-COMMENT ON COLUMN stg.routes.arrival_airport IS 'Code of airport of arrival';
-COMMENT ON COLUMN stg.routes.arrival_airport_name IS 'Name of airport of arrival';
-COMMENT ON COLUMN stg.routes.arrival_city IS 'City of arrival';
-COMMENT ON COLUMN stg.routes.aircraft_code IS 'Aircraft code, IATA';
-COMMENT ON COLUMN stg.routes.duration IS 'Scheduled duration of flight';
-COMMENT ON COLUMN stg.routes.days_of_week IS 'Days of week on which flights are scheduled';
-
--- Permissions
-
-ALTER TABLE stg.routes OWNER TO postgres;
-GRANT ALL ON TABLE stg.routes TO postgres;
-
-
-
--- DROP FUNCTION stg.lang();
-
-CREATE OR REPLACE FUNCTION bookings.lang()
- RETURNS text
- LANGUAGE plpgsql
- STABLE
-AS $function$
-BEGIN
-  RETURN current_setting('bookings.lang');
-EXCEPTION
-  WHEN undefined_object THEN
-    RETURN NULL;
-END;
-$function$
-;
-
--- Permissions
-
-ALTER FUNCTION stg.lang() OWNER TO postgres;
-GRANT ALL ON FUNCTION stg.lang() TO postgres;
-
--- DROP FUNCTION stg.now();
-
-CREATE OR REPLACE FUNCTION bookings.now()
- RETURNS timestamp with time zone
- LANGUAGE sql
- IMMUTABLE
-AS $function$SELECT '2017-08-15 18:00:00'::TIMESTAMP AT TIME ZONE 'Europe/Moscow';$function$
-;
-
-COMMENT ON FUNCTION stg.now() IS 'Point in time according to which the data are generated';
-
--- Permissions
-
-ALTER FUNCTION stg.now() OWNER TO postgres;
-GRANT ALL ON FUNCTION stg.now() TO postgres;
-
-
--- Permissions
-
-GRANT ALL ON SCHEMA stg TO postgres;
-
-
 --------------------------------------------------------------------------------------------------------------------------------- FINAL SCHEMA
 -- time dimension
-DROP TABLE if exists prod.dim_time;
-CREATE TABLE prod.dim_time
+DROP TABLE if exists final.dim_time;
+CREATE TABLE final.dim_time
 (
 	time_id integer NOT NULL,
 	time_actual time NOT NULL,
@@ -505,8 +303,8 @@ CREATE TABLE prod.dim_time
 	CONSTRAINT time_pk PRIMARY KEY (time_id)
 );
 
-DROP TABLE if exists prod.dim_date;
-CREATE TABLE prod.dim_date
+DROP TABLE if exists final.dim_date;
+CREATE TABLE final.dim_date
 (
   date_id              INT NOT null primary KEY,
   date_actual              DATE NOT NULL,
@@ -536,11 +334,11 @@ CREATE TABLE prod.dim_date
 );
 
 CREATE INDEX dim_date_date_actual_idx
-  ON prod.dim_date(date_actual);
+  ON final.dim_date(date_actual);
 
 
 -- dim passenger
-CREATE TABLE prod.dim_passenger (
+CREATE TABLE final.dim_passenger (
     passenger_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     passenger_nk VARCHAR(20) NOT NULL,
     passenger_name VARCHAR(255),
@@ -550,7 +348,7 @@ CREATE TABLE prod.dim_passenger (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE prod.dim_aircraft (
+CREATE TABLE final.dim_aircraft (
     aircraft_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     aircraft_nk BPCHAR(3) NOT NULL,
     model VARCHAR(255),
@@ -560,7 +358,7 @@ CREATE TABLE prod.dim_aircraft (
 );
 
 -- dim_airport
-CREATE TABLE prod.dim_airport (
+CREATE TABLE final.dim_airport (
     airport_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     airport_nk BPCHAR(3) NOT NULL,
     airport_name VARCHAR(255),
@@ -571,17 +369,17 @@ CREATE TABLE prod.dim_airport (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE prod.dim_seat (
+CREATE TABLE final.dim_seat (
     seat_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     aircraft_id UUID,
     seat_no VARCHAR(4) NOT NULL,
     fare_conditions VARCHAR(10),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_aircraft_seat FOREIGN KEY (aircraft_id) REFERENCES prod.dim_aircraft(aircraft_id)
+    CONSTRAINT fk_aircraft_seat FOREIGN KEY (aircraft_id) REFERENCES final.dim_aircraft(aircraft_id)
 );
 
-CREATE TABLE prod.fct_booking_ticket (
+CREATE TABLE final.fct_booking_ticket (
     booking_ticket_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     book_nk BPCHAR(6),
     ticket_no BPCHAR(13),
@@ -619,34 +417,34 @@ CREATE TABLE prod.fct_booking_ticket (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- Constraints
-    CONSTRAINT fk_booking_passenger_id FOREIGN KEY (passenger_id) REFERENCES prod.dim_passenger(passenger_id),
-    CONSTRAINT fk_book_date_local FOREIGN KEY (book_date_local) REFERENCES prod.dim_date,
-    CONSTRAINT fk_book_date_utc FOREIGN KEY (book_date_utc) REFERENCES prod.dim_date,
-    CONSTRAINT fk_book_time_local FOREIGN KEY (book_time_local) REFERENCES prod.dim_time,
-    CONSTRAINT fk_book_time_utc FOREIGN KEY (book_time_utc) REFERENCES prod.dim_time,
-    CONSTRAINT fk_scheduled_departure_date_local FOREIGN KEY (scheduled_departure_date_local) REFERENCES prod.dim_date,
-    CONSTRAINT fk_scheduled_departure_date_utc FOREIGN KEY (scheduled_departure_date_utc) REFERENCES prod.dim_date,
-    CONSTRAINT fk_scheduled_departure_time_local FOREIGN KEY (scheduled_departure_time_local) REFERENCES prod.dim_time,
-    CONSTRAINT fk_scheduled_departure_time_utc FOREIGN KEY (scheduled_departure_time_utc) REFERENCES prod.dim_time,
-    CONSTRAINT fk_scheduled_arrival_date_local FOREIGN KEY (scheduled_arrival_date_local) REFERENCES prod.dim_date,
-    CONSTRAINT fk_scheduled_arrival_date_utc FOREIGN KEY (scheduled_arrival_date_utc) REFERENCES prod.dim_date,
-    CONSTRAINT fk_scheduled_arrival_time_local FOREIGN KEY (scheduled_arrival_time_local) REFERENCES prod.dim_time,
-    CONSTRAINT fk_scheduled_arrival_time_utc FOREIGN KEY (scheduled_arrival_time_utc) REFERENCES prod.dim_time,
-    CONSTRAINT fk_departure_airport FOREIGN KEY (departure_airport) REFERENCES prod.dim_airport(airport_id),
-    CONSTRAINT fk_arrival_airport FOREIGN KEY (arrival_airport) REFERENCES prod.dim_airport(airport_id),
-    CONSTRAINT fk_aircraft_code FOREIGN KEY (aircraft_code) REFERENCES prod.dim_aircraft(aircraft_id),
-    CONSTRAINT fk_actual_departure_date_local FOREIGN KEY (actual_departure_date_local) REFERENCES prod.dim_date,
-    CONSTRAINT fk_actual_departure_date_utc FOREIGN KEY (actual_departure_date_utc) REFERENCES prod.dim_date,
-    CONSTRAINT fk_actual_departure_time_local FOREIGN KEY (actual_departure_time_local) REFERENCES prod.dim_time,
-    CONSTRAINT fk_actual_departure_time_utc FOREIGN KEY (actual_departure_time_utc) REFERENCES prod.dim_time,
-    CONSTRAINT fk_actual_arrival_date_local FOREIGN KEY (actual_arrival_date_local) REFERENCES prod.dim_date,
-    CONSTRAINT fk_actual_arrival_date_utc FOREIGN KEY (actual_arrival_date_utc) REFERENCES prod.dim_date,
-    CONSTRAINT fk_actual_arrival_time_local FOREIGN KEY (actual_arrival_time_local) REFERENCES prod.dim_time,
-    CONSTRAINT fk_actual_arrival_time_utc FOREIGN KEY (actual_arrival_time_utc) REFERENCES prod.dim_time
+    CONSTRAINT fk_booking_passenger_id FOREIGN KEY (passenger_id) REFERENCES final.dim_passenger(passenger_id),
+    CONSTRAINT fk_book_date_local FOREIGN KEY (book_date_local) REFERENCES final.dim_date,
+    CONSTRAINT fk_book_date_utc FOREIGN KEY (book_date_utc) REFERENCES final.dim_date,
+    CONSTRAINT fk_book_time_local FOREIGN KEY (book_time_local) REFERENCES final.dim_time,
+    CONSTRAINT fk_book_time_utc FOREIGN KEY (book_time_utc) REFERENCES final.dim_time,
+    CONSTRAINT fk_scheduled_departure_date_local FOREIGN KEY (scheduled_departure_date_local) REFERENCES final.dim_date,
+    CONSTRAINT fk_scheduled_departure_date_utc FOREIGN KEY (scheduled_departure_date_utc) REFERENCES final.dim_date,
+    CONSTRAINT fk_scheduled_departure_time_local FOREIGN KEY (scheduled_departure_time_local) REFERENCES final.dim_time,
+    CONSTRAINT fk_scheduled_departure_time_utc FOREIGN KEY (scheduled_departure_time_utc) REFERENCES final.dim_time,
+    CONSTRAINT fk_scheduled_arrival_date_local FOREIGN KEY (scheduled_arrival_date_local) REFERENCES final.dim_date,
+    CONSTRAINT fk_scheduled_arrival_date_utc FOREIGN KEY (scheduled_arrival_date_utc) REFERENCES final.dim_date,
+    CONSTRAINT fk_scheduled_arrival_time_local FOREIGN KEY (scheduled_arrival_time_local) REFERENCES final.dim_time,
+    CONSTRAINT fk_scheduled_arrival_time_utc FOREIGN KEY (scheduled_arrival_time_utc) REFERENCES final.dim_time,
+    CONSTRAINT fk_departure_airport FOREIGN KEY (departure_airport) REFERENCES final.dim_airport(airport_id),
+    CONSTRAINT fk_arrival_airport FOREIGN KEY (arrival_airport) REFERENCES final.dim_airport(airport_id),
+    CONSTRAINT fk_aircraft_code FOREIGN KEY (aircraft_code) REFERENCES final.dim_aircraft(aircraft_id),
+    CONSTRAINT fk_actual_departure_date_local FOREIGN KEY (actual_departure_date_local) REFERENCES final.dim_date,
+    CONSTRAINT fk_actual_departure_date_utc FOREIGN KEY (actual_departure_date_utc) REFERENCES final.dim_date,
+    CONSTRAINT fk_actual_departure_time_local FOREIGN KEY (actual_departure_time_local) REFERENCES final.dim_time,
+    CONSTRAINT fk_actual_departure_time_utc FOREIGN KEY (actual_departure_time_utc) REFERENCES final.dim_time,
+    CONSTRAINT fk_actual_arrival_date_local FOREIGN KEY (actual_arrival_date_local) REFERENCES final.dim_date,
+    CONSTRAINT fk_actual_arrival_date_utc FOREIGN KEY (actual_arrival_date_utc) REFERENCES final.dim_date,
+    CONSTRAINT fk_actual_arrival_time_local FOREIGN KEY (actual_arrival_time_local) REFERENCES final.dim_time,
+    CONSTRAINT fk_actual_arrival_time_utc FOREIGN KEY (actual_arrival_time_utc) REFERENCES final.dim_time
 );
 
 
-CREATE TABLE prod.fct_flight_activity (
+CREATE TABLE final.fct_flight_activity (
     flight_activity_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     flight_nk BPCHAR(6),
     flight_no VARCHAR,
@@ -677,28 +475,28 @@ CREATE TABLE prod.fct_flight_activity (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- Constraints
-    CONSTRAINT fk_scheduled_departure_date_local FOREIGN KEY (scheduled_departure_date_local) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_scheduled_departure_date_utc FOREIGN KEY (scheduled_departure_date_utc) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_scheduled_departure_time_local FOREIGN KEY (scheduled_departure_time_local) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_scheduled_departure_time_utc FOREIGN KEY (scheduled_departure_time_utc) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_scheduled_arrival_date_local FOREIGN KEY (scheduled_arrival_date_local) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_scheduled_arrival_date_utc FOREIGN KEY (scheduled_arrival_date_utc) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_scheduled_arrival_time_local FOREIGN KEY (scheduled_arrival_time_local) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_scheduled_arrival_time_utc FOREIGN KEY (scheduled_arrival_time_utc) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_departure_airport FOREIGN KEY (departure_airport) REFERENCES prod.dim_airport(airport_id),
-    CONSTRAINT fk_arrival_airport FOREIGN KEY (arrival_airport) REFERENCES prod.dim_airport(airport_id),
-    CONSTRAINT fk_aircraft_code FOREIGN KEY (aircraft_code) REFERENCES prod.dim_aircraft(aircraft_id),
-    CONSTRAINT fk_actual_departure_date_local FOREIGN KEY (actual_departure_date_local) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_actual_departure_date_utc FOREIGN KEY (actual_departure_date_utc) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_actual_departure_time_local FOREIGN KEY (actual_departure_time_local) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_actual_departure_time_utc FOREIGN KEY (actual_departure_time_utc) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_actual_arrival_date_local FOREIGN KEY (actual_arrival_date_local) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_actual_arrival_date_utc FOREIGN KEY (actual_arrival_date_utc) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_actual_arrival_time_local FOREIGN KEY (actual_arrival_time_local) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_actual_arrival_time_utc FOREIGN KEY (actual_arrival_time_utc) REFERENCES prod.dim_time(time_id)
+    CONSTRAINT fk_scheduled_departure_date_local FOREIGN KEY (scheduled_departure_date_local) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_scheduled_departure_date_utc FOREIGN KEY (scheduled_departure_date_utc) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_scheduled_departure_time_local FOREIGN KEY (scheduled_departure_time_local) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_scheduled_departure_time_utc FOREIGN KEY (scheduled_departure_time_utc) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_scheduled_arrival_date_local FOREIGN KEY (scheduled_arrival_date_local) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_scheduled_arrival_date_utc FOREIGN KEY (scheduled_arrival_date_utc) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_scheduled_arrival_time_local FOREIGN KEY (scheduled_arrival_time_local) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_scheduled_arrival_time_utc FOREIGN KEY (scheduled_arrival_time_utc) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_departure_airport FOREIGN KEY (departure_airport) REFERENCES final.dim_airport(airport_id),
+    CONSTRAINT fk_arrival_airport FOREIGN KEY (arrival_airport) REFERENCES final.dim_airport(airport_id),
+    CONSTRAINT fk_aircraft_code FOREIGN KEY (aircraft_code) REFERENCES final.dim_aircraft(aircraft_id),
+    CONSTRAINT fk_actual_departure_date_local FOREIGN KEY (actual_departure_date_local) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_actual_departure_date_utc FOREIGN KEY (actual_departure_date_utc) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_actual_departure_time_local FOREIGN KEY (actual_departure_time_local) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_actual_departure_time_utc FOREIGN KEY (actual_departure_time_utc) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_actual_arrival_date_local FOREIGN KEY (actual_arrival_date_local) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_actual_arrival_date_utc FOREIGN KEY (actual_arrival_date_utc) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_actual_arrival_time_local FOREIGN KEY (actual_arrival_time_local) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_actual_arrival_time_utc FOREIGN KEY (actual_arrival_time_utc) REFERENCES final.dim_time(time_id)
 );
 
-CREATE TABLE prod.fct_seat_occupied_daily (
+CREATE TABLE final.fct_seat_occupied_daily (
     seat_occupied_daily_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     date_flight INT,
     flight_nk BPCHAR(6),
@@ -714,13 +512,13 @@ CREATE TABLE prod.fct_seat_occupied_daily (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- Constraints
-    CONSTRAINT fk_date_flight FOREIGN KEY (date_flight) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_departure_airport FOREIGN KEY (departure_airport) REFERENCES prod.dim_airport(airport_id),
-    CONSTRAINT fk_arrival_airport FOREIGN KEY (arrival_airport) REFERENCES prod.dim_airport(airport_id),
-    CONSTRAINT fk_aircraft_code FOREIGN KEY (aircraft_code) REFERENCES prod.dim_aircraft(aircraft_id)
+    CONSTRAINT fk_date_flight FOREIGN KEY (date_flight) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_departure_airport FOREIGN KEY (departure_airport) REFERENCES final.dim_airport(airport_id),
+    CONSTRAINT fk_arrival_airport FOREIGN KEY (arrival_airport) REFERENCES final.dim_airport(airport_id),
+    CONSTRAINT fk_aircraft_code FOREIGN KEY (aircraft_code) REFERENCES final.dim_aircraft(aircraft_id)
 );
 
-CREATE TABLE prod.fct_boarding_pass (
+CREATE TABLE final.fct_boarding_pass (
     boarding_pass_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     ticket_no BPCHAR(13),
     book_ref BPCHAR(6),
@@ -746,21 +544,21 @@ CREATE TABLE prod.fct_boarding_pass (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- Constraints
-    CONSTRAINT fk_passenger_id FOREIGN KEY (passenger_id) REFERENCES prod.dim_passenger(passenger_id),
-    CONSTRAINT fk_scheduled_departure_date_local FOREIGN KEY (scheduled_departure_date_local) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_scheduled_departure_date_utc FOREIGN KEY (scheduled_departure_date_utc) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_scheduled_departure_time_local FOREIGN KEY (scheduled_departure_time_local) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_scheduled_departure_time_utc FOREIGN KEY (scheduled_departure_time_utc) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_scheduled_arrival_date_local FOREIGN KEY (scheduled_arrival_date_local) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_scheduled_arrival_date_utc FOREIGN KEY (scheduled_arrival_date_utc) REFERENCES prod.dim_date(date_id),
-    CONSTRAINT fk_scheduled_arrival_time_local FOREIGN KEY (scheduled_arrival_time_local) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_scheduled_arrival_time_utc FOREIGN KEY (scheduled_arrival_time_utc) REFERENCES prod.dim_time(time_id),
-    CONSTRAINT fk_departure_airport FOREIGN KEY (departure_airport) REFERENCES prod.dim_airport(airport_id),
-    CONSTRAINT fk_arrival_airport FOREIGN KEY (arrival_airport) REFERENCES prod.dim_airport(airport_id),
-    CONSTRAINT fk_aircraft_code FOREIGN KEY (aircraft_code) REFERENCES prod.dim_aircraft(aircraft_id)
+    CONSTRAINT fk_passenger_id FOREIGN KEY (passenger_id) REFERENCES final.dim_passenger(passenger_id),
+    CONSTRAINT fk_scheduled_departure_date_local FOREIGN KEY (scheduled_departure_date_local) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_scheduled_departure_date_utc FOREIGN KEY (scheduled_departure_date_utc) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_scheduled_departure_time_local FOREIGN KEY (scheduled_departure_time_local) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_scheduled_departure_time_utc FOREIGN KEY (scheduled_departure_time_utc) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_scheduled_arrival_date_local FOREIGN KEY (scheduled_arrival_date_local) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_scheduled_arrival_date_utc FOREIGN KEY (scheduled_arrival_date_utc) REFERENCES final.dim_date(date_id),
+    CONSTRAINT fk_scheduled_arrival_time_local FOREIGN KEY (scheduled_arrival_time_local) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_scheduled_arrival_time_utc FOREIGN KEY (scheduled_arrival_time_utc) REFERENCES final.dim_time(time_id),
+    CONSTRAINT fk_departure_airport FOREIGN KEY (departure_airport) REFERENCES final.dim_airport(airport_id),
+    CONSTRAINT fk_arrival_airport FOREIGN KEY (arrival_airport) REFERENCES final.dim_airport(airport_id),
+    CONSTRAINT fk_aircraft_code FOREIGN KEY (aircraft_code) REFERENCES final.dim_aircraft(aircraft_id)
 );
 
-INSERT INTO prod.dim_date
+INSERT INTO final.dim_date
 SELECT TO_CHAR(datum, 'yyyymmdd')::INT AS date_id,
        datum AS date_actual,
        TO_CHAR(datum, 'fmDDth') AS day_suffix,
@@ -800,7 +598,7 @@ FROM (SELECT '1998-01-01'::DATE + SEQUENCE.DAY AS datum
 ORDER BY 1;
 
 -- populate time dimension
-insert into  prod.dim_time
+insert into  final.dim_time
 
 SELECT  
 	cast(to_char(minute, 'hh24mi') as numeric) time_id,

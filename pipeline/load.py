@@ -2,13 +2,15 @@ import luigi
 import logging
 import pandas as pd
 import time
+import sqlalchemy
 from datetime import datetime
 from extract import Extract
 from utils.db_conn import db_connection
 from utils.read_sql import read_sql_file
 from utils.concat_dataframe import concat_dataframes
 from utils.copy_log import copy_log
-from utils.format_null_value import format_value
+from utils.delete_temp_data import delete_temp
+from sqlalchemy.orm import sessionmaker
 import os
 
 # Define DIR
@@ -20,394 +22,201 @@ DIR_LOG = os.getenv("DIR_LOG")
 
 class Load(luigi.Task):
     
-    current_local_time = datetime.now()
-    
     def requires(self):
         return Extract()
     
     def run(self):
-        # Create summary for extract task
-        timestamp_data = [datetime.now()]
-        task_data = ['Load']
-        status_data = []
-        execution_time_data = []
-    
-        # Establish connections to source and DWH databases
-        try:
-            _, _, conn_dwh, cur_dwh = db_connection()
-            
-        except Exception:
-            raise Exception("Failed to connect to Data Warehouse")
-        
+         
         # Configure logging
         logging.basicConfig(filename = f'{DIR_TEMP_LOG}/logs.log', 
                             level = logging.INFO, 
                             format = '%(asctime)s - %(levelname)s - %(message)s')
         
-        # Data to be loaded
+        # Read Data to be load
         try:
+            # Read csv
             aircrafts_data = pd.read_csv(self.input()[0].path)
             airports_data = pd.read_csv(self.input()[1].path)
-            boarding_passes = pd.read_csv(self.input()[2].path)
-            bookings = pd.read_csv(self.input()[3].path)
-            flights = pd.read_csv(self.input()[4].path)
-            flights = flights.where(pd.notnull(flights), None)
-            seats = pd.read_csv(self.input()[5].path)
+            bookings = pd.read_csv(self.input()[2].path)
+            tickets = pd.read_csv(self.input()[3].path)
+            seats = pd.read_csv(self.input()[4].path)
+            flights = pd.read_csv(self.input()[5].path)
             ticket_flights = pd.read_csv(self.input()[6].path)
-            tickets = pd.read_csv(self.input()[7].path)
-
-        except Exception:
-            raise Exception("Failed to Read Extracted CSV")
-        
-        
-        # Define the query of each tables
-        try:
-            upsert_aircrafts_data_query = read_sql_file(
-                file_path = f"{DIR_LOAD_QUERY}/stg-aircrafts_data.sql"
-            )
+            boarding_passes = pd.read_csv(self.input()[7].path)
             
-            upsert_airports_data_query = read_sql_file(
-                file_path = f"{DIR_LOAD_QUERY}/stg-airports_data.sql"
-            )
+            # Modify some columns.
+            # Modify some columns because if they are not replaced it will result in an error
+            aircrafts_data['model'] = aircrafts_data['model'].str.replace("'", '"')
+            airports_data['airport_name'] = airports_data['airport_name'].str.replace("'", '"')
+            airports_data['city'] = airports_data['city'].str.replace("'", '"')
+            flights = flights.where(pd.notnull(flights), None)
+            tickets['contact_data'] = tickets['contact_data'].str.replace("'", '"')
             
-            upsert_boarding_passes_query = read_sql_file(
-                file_path = f"{DIR_LOAD_QUERY}/stg-boarding_passes.sql"
-            )
-            
-            upsert_bookings_query = read_sql_file(
-                file_path = f"{DIR_LOAD_QUERY}/stg-bookings.sql"
-            )
-            
-            upsert_flights_query = read_sql_file(
-                file_path = f"{DIR_LOAD_QUERY}/stg-flights.sql"
-            )
-            
-            upsert_seats_query = read_sql_file(
-                file_path = f"{DIR_LOAD_QUERY}/stg-seats.sql"
-            )
-            
-            upsert_ticket_flights_query = read_sql_file(
-                file_path = f"{DIR_LOAD_QUERY}/stg-ticket_flights.sql"
-            )
-            
-            upsert_tickets_query = read_sql_file(
-                file_path = f"{DIR_LOAD_QUERY}/stg-tickets.sql"
-            )
+            logging.info(f"Read Extracted Data - SUCCESS")
             
         except Exception:
-            raise Exception("Failed to read SQL Query")
+            logging.error(f"Read Extracted Data  - FAILED")
+            raise Exception("Failed to Read Extracted Data")
         
-        start_time = time.time()  # Record start time
-        
-        # Load to Database
+        # Establish connections to DWH
         try:
-            # Load to 'aircrafts_data' Table
-            # for index, row in aircrafts_data.iterrows():
-            #     # Extract values from the DataFrame row
-            #     aircraft_code = row['aircraft_code']
-            #     model = row['model'].replace("'", "\"")
-            #     range = row['range']
-            #     # created_at = row['created_at']
-            #     # updated_at = row['updated_at']
+            _, dwh_engine = db_connection()
+            logging.info(f"Connect to DWH - SUCCESS")
             
-            #     # Execute the upsert query
-            #     cur_dwh.execute(upsert_aircrafts_data_query.format(
-            #         aircraft_code = aircraft_code,
-            #         model = model,
-            #         range = range,
-            #         # created_at = created_at,
-            #         # updated_at = updated_at,
-            #         current_local_time = self.current_local_time
-            #     ))
+        except Exception:
+            logging.info(f"Connect to DWH - FAILED")
+            raise Exception("Failed to connect to Data Warehouse")
+        
+        
+        # Truncate all tables before load
+        # This puropose to avoid errors because duplicate key value violates unique constraint
+        try:
+            # Read query
+            truncate_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-truncate_tables.sql'
+            )
+            
+            # Split the SQL queries if multiple queries are present
+            truncate_query = truncate_query.split(';')
 
-            # # Commit the transaction
-            # conn_dwh.commit()
-            # # Close the cursor and connection
-            # conn_dwh.close()
-            # cur_dwh.close()
-            # _, _, conn_dwh, cur_dwh = db_connection()
+            # Remove newline characters and leading/trailing whitespaces
+            truncate_query = [query.strip() for query in truncate_query if query.strip()]
             
-            # # Log success message
-            # logging.info(f"LOAD aircrafts_data - SUCCESS")
-            
-            # # Load to 'airports_data' Table
-            # for index, row in airports_data.iterrows():
-            #     # Extract values from the DataFrame row
-            #     airport_code = row['airport_code']
-            #     airport_name = row['airport_name'].replace("'", "\"")
-            #     city = row['city'].replace("'", "\"")
-            #     coordinates = row['coordinates']
-            #     timezone = row['timezone']
-            #     # created_at = row['created_at']
-            #     # updated_at = row['updated_at']
-            
-            #     # Execute the upsert query
-            #     cur_dwh.execute(upsert_airports_data_query.format(
-            #         airport_code = airport_code,
-            #         airport_name = airport_name,
-            #         city = city,
-            #         coordinates = coordinates,
-            #         timezone = timezone,
-            #         # created_at = created_at,
-            #         # updated_at = updated_at,
-            #         current_local_time = self.current_local_time
-            #     ))
+            # Create session
+            Session = sessionmaker(bind = dwh_engine)
+            session = Session()
 
-            # # Commit the transaction
-            # conn_dwh.commit()
-            # # Close the cursor and connection
-            # conn_dwh.close()
-            # cur_dwh.close()
-            # _, _, conn_dwh, cur_dwh = db_connection()
-            
-            # # Log success message
-            # logging.info(f"LOAD airports_data - SUCCESS")
-            
-            # Load to 'bookings' Table
-            for index, row in bookings.iterrows():
-                # Extract values from the DataFrame row
-                book_ref = row['book_ref']
-                book_date = row['book_date']
-                total_amount = row['total_amount']
-                # created_at = row['created_at']
-                # updated_at = row['updated_at']
-            
-                # Execute the upsert query
-                cur_dwh.execute(upsert_bookings_query.format(
-                    book_ref = book_ref,
-                    book_date = book_date,
-                    total_amount = total_amount,
-                    # created_at = created_at,
-                    # updated_at = updated_at,
-                    current_local_time = self.current_local_time
-                ))
-
-            # Commit the transaction
-            conn_dwh.commit()
-            # Close the cursor and connection
-            conn_dwh.close()
-            cur_dwh.close()
-            _, _, conn_dwh, cur_dwh = db_connection()
-            
-            # Log success message
-            logging.info(f"LOAD bookings - SUCCESS")
-            
-            # # Load to 'tickets' Table
-            # for index, row in tickets.iterrows():
-            #     # Extract values from the DataFrame row
-            #     ticket_no = row['ticket_no']
-            #     book_ref = row['book_ref']
-            #     passenger_id = row['passenger_id']
-            #     passenger_name = row['passenger_name']
-            #     contact_data = row['contact_data'].replace("'", "\"")
-            #     # created_at = row['created_at']
-            #     # updated_at = row['updated_at']
-            
-            #     # Execute the upsert query
-            #     cur_dwh.execute(upsert_tickets_query.format(
-            #         ticket_no = ticket_no,
-            #         book_ref = book_ref,
-            #         passenger_id = passenger_id,
-            #         passenger_name = passenger_name,
-            #         contact_data = contact_data,
-            #         # created_at = created_at,
-            #         # updated_at = updated_at,
-            #         current_local_time = self.current_local_time
-            #     ))
+            # Execute each query
+            for query in truncate_query:
+                query = sqlalchemy.text(query)
+                session.execute(query)
                 
-            # # Commit the transaction
-            # conn_dwh.commit()
+            session.commit()
             
-            # # Log success message
-            # logging.info(f"LOAD tickets - SUCCESS")
-            # # Close the cursor and connection
-            # conn_dwh.close()
-            # cur_dwh.close()
-            # _, _, conn_dwh, cur_dwh = db_connection()
-            
-            # # Load to 'seats' Table
-            # for index, row in seats.iterrows():
-            #     # Extract values from the DataFrame row
-            #     aircraft_code = row['aircraft_code']
-            #     seat_no = row['seat_no']
-            #     fare_conditions = row['fare_conditions']
-            #     # created_at = row['created_at']
-            #     # updated_at = row['updated_at']
-            
-            #     # Execute the upsert query
-            #     cur_dwh.execute(upsert_seats_query.format(
-            #         aircraft_code = aircraft_code,
-            #         seat_no = seat_no,
-            #         fare_conditions = fare_conditions,
-            #         # created_at = created_at,
-            #         # updated_at = updated_at,
-            #         current_local_time = self.current_local_time
-            #     ))
+            # Close session
+            session.close()
 
-            # # Commit the transaction
-            # conn_dwh.commit()
+            logging.info(f"Truncate staging tables - SUCCESS")
+        
+        except Exception:
+            logging.error(f"Truncate staging tables - FAILED")
             
-            # # Log success message
-            # logging.info(f"LOAD seats - SUCCESS")
+            raise Exception("Failed to Truncate Tables")
+        
+        
+        # Record start time for loading tables
+        start_time = time.time()  
+        
+        # Load Tables
+        try:
+            # Load aircraft tables    
+            aircrafts_data.to_sql('aircrafts_data', 
+                                  con = dwh_engine, 
+                                  if_exists = 'append', 
+                                  index = False, 
+                                  schema = 'stg')
+            logging.info(f"LOAD 'stg.aircrafts_data' - SUCCESS")
             
-            # # Close the cursor and connection
-            # conn_dwh.close()
-            # cur_dwh.close()
             
-            # _, _, conn_dwh, cur_dwh = db_connection()
+            # Load airports_data tables
+            airports_data.to_sql('airports_data', 
+                                 con = dwh_engine, 
+                                 if_exists = 'append', 
+                                 index = False, 
+                                 schema = 'stg')
+            logging.info(f"LOAD 'stg.airports_data' - SUCCESS")
             
-            # # Load to 'flights' Table
-            # for index, row in flights.iterrows():
-            #     # Extract values from the DataFrame row
-            #     flight_id = row['flight_id']
-            #     flight_no = row['flight_no']
-            #     scheduled_departure = row['scheduled_departure']
-            #     scheduled_arrival = row['scheduled_arrival']
-            #     departure_airport = row['departure_airport']
-            #     arrival_airport = row['arrival_airport']
-            #     status = row['status']
-            #     aircraft_code = row['aircraft_code']
-            #     actual_departure = row['actual_departure']
-            #     # Convert None to NULL for timestamp column
-            #     # actual_departure = str(actual_departure) if actual_departure is not 'NULL' else 'NULL'
-            #     actual_arrival = row['actual_arrival']
-            #     # created_at = row['created_at']
-            #     # updated_at = row['updated_at']
             
-            #     # Execute the upsert query
-            #     cur_dwh.execute(upsert_flights_query.format(
-            #         flight_id=flight_id,
-            #         flight_no=flight_no,
-            #         scheduled_departure=scheduled_departure,
-            #         scheduled_arrival=scheduled_arrival,
-            #         departure_airport=departure_airport,
-            #         arrival_airport=arrival_airport,
-            #         status=status,
-            #         aircraft_code=aircraft_code,
-            #         actual_departure=format_value(actual_departure),
-            #         actual_arrival=format_value(actual_arrival),
-            #         # created_at=created_at,
-            #         # updated_at=updated_at,
-            #         current_local_time=self.current_local_time
-            #     ))
-
-            # # Commit the transaction
-            # conn_dwh.commit()
-            # # Close the cursor and connection
-            # conn_dwh.close()
-            # cur_dwh.close()
-            # _, _, conn_dwh, cur_dwh = db_connection()
+            # Load bookings tables
+            bookings.to_sql('bookings', 
+                            con = dwh_engine, 
+                            if_exists = 'append', 
+                            index = False, 
+                            schema = 'stg')
+            logging.info(f"LOAD 'stg.bookings' - SUCCESS")
             
-            # # Log success message
-            # logging.info(f"LOAD flights - SUCCESS")
             
-            # # Load to 'ticket_flights' Table
-            # for index, row in ticket_flights.iterrows():
-            #     # Extract values from the DataFrame row
-            #     ticket_no = row['ticket_no']
-            #     flight_id = row['flight_id']
-            #     fare_conditions = row['fare_conditions']
-            #     amount = row['amount']
-            #     # created_at = row['created_at']
-            #     # updated_at = row['updated_at']
+            # Load tickets tables
+            tickets.to_sql('tickets', 
+                           con = dwh_engine, 
+                           if_exists = 'append', 
+                           index = False, 
+                           schema = 'stg')
+            logging.info(f"LOAD 'stg.tickets' - SUCCESS")
             
-            #     # Execute the upsert query
-            #     cur_dwh.execute(upsert_ticket_flights_query.format(
-            #         ticket_no = ticket_no,
-            #         flight_id = flight_id,
-            #         fare_conditions = fare_conditions,
-            #         amount = amount,
-            #         # created_at = created_at,
-            #         # updated_at = updated_at,
-            #         current_local_time = self.current_local_time
-            #     ))
-
-            # # Commit the transaction
-            # conn_dwh.commit()
-            # # Close the cursor and connection
-            # conn_dwh.close()
-            # cur_dwh.close()
-            # _, _, conn_dwh, cur_dwh = db_connection()
             
-            # # Log success message
-            # logging.info(f"LOAD ticket_flights - SUCCESS")
+            # Load seats tables
+            seats.to_sql('seats', 
+                         con = dwh_engine, 
+                         if_exists = 'append', 
+                         index = False, 
+                         schema = 'stg')
+            logging.info(f"LOAD 'stg.seats' - SUCCESS")
             
-            # # Load to 'boarding_passes' Table
-            # for index, row in boarding_passes.iterrows():
-            #     # Extract values from the DataFrame row
-            #     ticket_no = row['ticket_no']
-            #     flight_id = row['flight_id']
-            #     boarding_no = row['boarding_no']
-            #     seat_no = row['seat_no']
-            #     # created_at = row['created_at']
-            #     # updated_at = row['updated_at']
             
-            #     # Execute the upsert query
-            #     cur_dwh.execute(upsert_boarding_passes_query.format(
-            #         ticket_no = ticket_no,
-            #         flight_id = flight_id,
-            #         boarding_no = boarding_no,
-            #         seat_no = seat_no,
-            #         # created_at = created_at,
-            #         # updated_at = updated_at,
-            #         current_local_time = self.current_local_time
-            #     ))
-
-            # # Commit the transaction
-            # conn_dwh.commit()
-            # # Close the cursor and connection
-            # conn_dwh.close()
-            # cur_dwh.close()
+            # Load flights tables
+            flights.to_sql('flights', 
+                           con = dwh_engine, 
+                           if_exists = 'append', 
+                           index = False, 
+                           schema = 'stg')
+            logging.info(f"LOAD 'stg.flights' - SUCCESS")
             
-            # # Log success message
-            # logging.info(f"LOAD boarding_passes - SUCCESS")
+            
+            # Load tickets_flights tables
+            ticket_flights.to_sql('ticket_flights', 
+                                  con = dwh_engine, 
+                                  if_exists = 'append', 
+                                  index = False, 
+                                  schema = 'stg')
+            logging.info(f"LOAD 'stg.ticket_flights' - SUCCESS")
+            
+            
+            # Load boarding_passes tables
+            boarding_passes.to_sql('boarding_passes', 
+                                   con = dwh_engine, 
+                                   if_exists = 'append', 
+                                   index = False, 
+                                   schema = 'stg')
+            logging.info(f"LOAD 'stg.boarding_passes' - SUCCESS")
+            logging.info(f"LOAD All Tables To DWH Staging - SUCCESS")
     
-           
-            end_time = time.time()  # Record end time
+           # Record end time for loading tables
+            end_time = time.time()  
             execution_time = end_time - start_time  # Calculate execution time
             
             # Get summary
-            status_data.append('Success')
-            execution_time_data.append(execution_time)
-            
-            # Get summary dict
             summary_data = {
-                'timestamp': timestamp_data,
-                'task': task_data,
-                'status' : status_data,
-                'execution_time': execution_time_data
+                'timestamp': [datetime.now()],
+                'task': ['Load'],
+                'status' : ['Success'],
+                'execution_time': [execution_time]
             }
-            
+
             # Get summary dataframes
             summary = pd.DataFrame(summary_data)
             
-            # Write DataFrame to CSV
+            # Write Summary to CSV
             summary.to_csv(f"{DIR_TEMP_DATA}/load-summary.csv", index = False)
         
         except Exception:
-            start_time = time.time() # Record start time
-            end_time = time.time()  # Record end time
-            execution_time = end_time - start_time  # Calculate execution time
+            logging.error(f"Load tables to DWH Staging - FAILED")
             
             # Get summary
-            status_data.append('Failed')
-            execution_time_data.append(execution_time)
-            
-            # Get summary dict
             summary_data = {
-                'timestamp': timestamp_data,
-                'task': task_data,
-                'status' : status_data,
-                'execution_time': execution_time_data
+                'timestamp': [datetime.now()],
+                'task': ['Load'],
+                'status' : ['Failed'],
+                'execution_time': [0]
             }
-            
+
             # Get summary dataframes
             summary = pd.DataFrame(summary_data)
             
-            # Write DataFrame to CSV
+            # Write Summary to CSV
             summary.to_csv(f"{DIR_TEMP_DATA}/load-summary.csv", index = False)
             
-            raise Exception('Failed to Load Tables')
+            raise Exception('Failed Load Tables To ')
 
     def output(self):
         return [luigi.LocalTarget(f'{DIR_TEMP_LOG}/logs.log'),
@@ -415,20 +224,34 @@ class Load(luigi.Task):
   
 # Execute the functions when the script is run
 if __name__ == "__main__":
+    # Build the task
     luigi.build([Extract(),
                  Load()])
     
+    # Concat temp extract summary to final summary
     concat_dataframes(
         df1 = pd.read_csv(f'{DIR_ROOT_PROJECT}/pipeline_summary.csv'),
         df2 = pd.read_csv(f'{DIR_TEMP_DATA}/extract-summary.csv')
     )
     
+    # Concat temp extract summary to final summary
     concat_dataframes(
         df1 = pd.read_csv(f'{DIR_ROOT_PROJECT}/pipeline_summary.csv'),
         df2 = pd.read_csv(f'{DIR_TEMP_DATA}/load-summary.csv')
     )
     
+    # Append log from temp to final log
     copy_log(
         source_file = f'{DIR_TEMP_LOG}/logs.log',
         destination_file = f'{DIR_LOG}/logs.log'
+    )
+    
+    # Delete temp data
+    delete_temp(
+        directory = f'{DIR_TEMP_DATA}'
+    )
+    
+    # Delete temp log
+    delete_temp(
+        directory = f'{DIR_TEMP_LOG}'
     )

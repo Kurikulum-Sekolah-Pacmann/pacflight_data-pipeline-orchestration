@@ -20,34 +20,29 @@ DIR_LOG = os.getenv("DIR_LOG")
 
 class Extract(luigi.Task):
     
+    # Define tables to be extracted from db sources
     tables_to_extract = ['bookings.aircrafts_data', 
                          'bookings.airports_data', 
-                         'bookings.boarding_passes', 
                          'bookings.bookings', 
-                         'bookings.flights', 
-                         'bookings.seats',
+                         'bookings.tickets', 
+                         'bookings.seats', 
+                         'bookings.flights',
                          'bookings.ticket_flights',
-                         'bookings.tickets']
+                         'bookings.boarding_passes']
     
     def requires(self):
         pass
 
 
-    def run(self):
-        # Create summary for extract task
-        timestamp_data = [datetime.now()]
-        task_data = ['Extract']
-        status_data = []
-        execution_time_data = []
-        
+    def run(self):        
         try:
             # Configure logging
             logging.basicConfig(filename = f'{DIR_TEMP_LOG}/logs.log', 
                                 level = logging.INFO, 
                                 format = '%(asctime)s - %(levelname)s - %(message)s')
             
-            # Connect to PostgreSQL database
-            conn_src, _, _, _ = db_connection()
+            # Define db connection engine
+            src_engine, _ = db_connection()
             
             # Define the query using the SQL content
             extract_query = read_sql_file(
@@ -59,33 +54,28 @@ class Extract(luigi.Task):
             for index, table_name in enumerate(self.tables_to_extract):
                 try:
                     # Read data into DataFrame
-                    df = pd.read_sql_query(extract_query.format(table_name = table_name), conn_src)
+                    df = pd.read_sql_query(extract_query.format(table_name = table_name), src_engine)
 
                     # Write DataFrame to CSV
                     df.to_csv(f"{DIR_TEMP_DATA}/{table_name}.csv", index=False)
                     
-                    # Log success message
                     logging.info(f"EXTRACT '{table_name}' - SUCCESS.")
                     
                 except Exception:
-                    # Log success message
-                    logging.info(f"EXTRACT '{table_name}' - FAILED.")  
-                      
+                    logging.error(f"EXTRACT '{table_name}' - FAILED.")  
                     raise Exception(f"Failed to extract '{table_name}' tables")
+            
+            logging.info(f"Extract All Tables From Sources - SUCCESS")
             
             end_time = time.time()  # Record end time
             execution_time = end_time - start_time  # Calculate execution time
             
             # Get summary
-            status_data.append('Success')   
-            execution_time_data.append(execution_time)
-            
-            # Get summary dict
             summary_data = {
-                'timestamp': timestamp_data,
-                'task': task_data,
-                'status' : status_data,
-                'execution_time': execution_time_data
+                'timestamp': [datetime.now()],
+                'task': ['Extract'],
+                'status' : ['Success'],
+                'execution_time': [execution_time]
             }
             
             # Get summary dataframes
@@ -94,21 +84,15 @@ class Extract(luigi.Task):
             # Write DataFrame to CSV
             summary.to_csv(f"{DIR_TEMP_DATA}/extract-summary.csv", index = False)
                     
-        except Exception:
-            start_time = time.time()  # Record start time
-            end_time = time.time()  # Record end time
-            execution_time = end_time - start_time  # Calculate execution time
-            
+        except Exception:   
+            logging.info(f"Extract All Tables From Sources - FAILED")
+             
             # Get summary
-            status_data.append('Failed')
-            execution_time_data.append(execution_time)
-            
-            # Get summary dict
             summary_data = {
-                'timestamp': timestamp_data,
-                'task': task_data,
-                'status' : status_data,
-                'execution_time': execution_time_data
+                'timestamp': [datetime.now()],
+                'task': ['Extract'],
+                'status' : ['Failed'],
+                'execution_time': [0]
             }
             
             # Get summary dataframes
@@ -119,11 +103,6 @@ class Extract(luigi.Task):
             
             # Write exception
             raise Exception(f"FAILED to execute EXTRACT TASK !!!")
-
-        finally:
-            # Close database conn_src
-            if conn_src:
-                conn_src.close()
                 
     def output(self):
         outputs = []
