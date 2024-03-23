@@ -1,38 +1,40 @@
-2024-03-24 00:26:54,151 - INFO - EXTRACT 'bookings.aircrafts_data' - SUCCESS.
-2024-03-24 00:26:54,160 - INFO - EXTRACT 'bookings.airports_data' - SUCCESS.
-2024-03-24 00:26:58,079 - INFO - EXTRACT 'bookings.bookings' - SUCCESS.
-2024-03-24 00:27:04,141 - INFO - EXTRACT 'bookings.tickets' - SUCCESS.
-2024-03-24 00:27:04,240 - INFO - EXTRACT 'bookings.seats' - SUCCESS.
-2024-03-24 00:27:05,277 - INFO - EXTRACT 'bookings.flights' - SUCCESS.
-2024-03-24 00:27:19,528 - INFO - EXTRACT 'bookings.ticket_flights' - SUCCESS.
-2024-03-24 00:27:29,545 - INFO - EXTRACT 'bookings.boarding_passes' - SUCCESS.
-2024-03-24 00:27:29,545 - INFO - Extract All Tables From Sources - SUCCESS
-2024-03-24 00:27:29,605 - INFO - [pid 431902] Worker Worker(salt=8384714588, workers=1, host=DESKTOP-V42S030, username=laode, pid=431902) done      Extract()
-2024-03-24 00:27:29,606 - DEBUG - 1 running tasks, waiting for next task to finish
-2024-03-24 00:27:29,612 - INFO - Informed scheduler that task   Extract__99914b932b   has status   DONE
-2024-03-24 00:27:29,612 - DEBUG - Asking scheduler for work...
-2024-03-24 00:27:29,618 - DEBUG - Pending tasks: 1
-2024-03-24 00:27:29,619 - INFO - [pid 431902] Worker Worker(salt=8384714588, workers=1, host=DESKTOP-V42S030, username=laode, pid=431902) running   Load()
-2024-03-24 00:27:33,559 - INFO - Read Extracted Data - SUCCESS
-2024-03-24 00:27:33,561 - INFO - Connect to DWH - SUCCESS
-2024-03-24 00:27:33,828 - INFO - Truncate staging tables - SUCCESS
-2024-03-24 00:27:33,843 - INFO - LOAD 'stg.aircrafts_data' - SUCCESS
-2024-03-24 00:27:33,861 - INFO - LOAD 'stg.airports_data' - SUCCESS
-2024-03-24 00:27:43,587 - INFO - LOAD 'stg.bookings' - SUCCESS
-2024-03-24 00:28:04,738 - INFO - LOAD 'stg.tickets' - SUCCESS
-2024-03-24 00:28:04,802 - INFO - LOAD 'stg.seats' - SUCCESS
-2024-03-24 00:28:08,238 - INFO - LOAD 'stg.flights' - SUCCESS
-2024-03-24 00:29:07,585 - INFO - LOAD 'stg.ticket_flights' - SUCCESS
-2024-03-24 00:29:36,337 - INFO - LOAD 'stg.boarding_passes' - SUCCESS
-2024-03-24 00:29:36,337 - INFO - LOAD All Tables To DWH Staging - SUCCESS
-2024-03-24 00:29:36,412 - INFO - [pid 431902] Worker Worker(salt=8384714588, workers=1, host=DESKTOP-V42S030, username=laode, pid=431902) done      Load()
-2024-03-24 00:29:36,412 - DEBUG - 1 running tasks, waiting for next task to finish
-2024-03-24 00:29:36,415 - INFO - Informed scheduler that task   Load__99914b932b   has status   DONE
-2024-03-24 00:29:36,415 - DEBUG - Asking scheduler for work...
-2024-03-24 00:29:36,418 - DEBUG - Done
-2024-03-24 00:29:36,418 - DEBUG - There are no more tasks to run at this time
-2024-03-24 00:29:36,419 - INFO - Worker Worker(salt=8384714588, workers=1, host=DESKTOP-V42S030, username=laode, pid=431902) was stopped. Shutting down Keep-Alive thread
-2024-03-24 00:29:36,420 - INFO - 
+2024-03-24 04:55:16,680 - INFO - EXTRACT 'bookings.aircrafts_data' - SUCCESS.
+2024-03-24 04:55:16,689 - INFO - EXTRACT 'bookings.airports_data' - SUCCESS.
+2024-03-24 04:55:20,552 - INFO - EXTRACT 'bookings.bookings' - SUCCESS.
+2024-03-24 04:55:26,751 - INFO - EXTRACT 'bookings.tickets' - SUCCESS.
+2024-03-24 04:55:26,858 - INFO - EXTRACT 'bookings.seats' - SUCCESS.
+2024-03-24 04:55:28,015 - INFO - EXTRACT 'bookings.flights' - SUCCESS.
+2024-03-24 04:55:41,456 - INFO - EXTRACT 'bookings.ticket_flights' - SUCCESS.
+2024-03-24 04:55:49,423 - INFO - EXTRACT 'bookings.boarding_passes' - SUCCESS.
+2024-03-24 04:55:49,423 - INFO - Extract All Tables From Sources - SUCCESS
+2024-03-24 04:55:49,483 - INFO - [pid 477001] Worker Worker(salt=1838461120, workers=1, host=DESKTOP-V42S030, username=laode, pid=477001) done      Extract()
+2024-03-24 04:55:49,485 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-24 04:55:49,488 - INFO - Informed scheduler that task   Extract__99914b932b   has status   DONE
+2024-03-24 04:55:49,489 - DEBUG - Asking scheduler for work...
+2024-03-24 04:55:49,492 - DEBUG - Pending tasks: 1
+2024-03-24 04:55:49,492 - INFO - [pid 477001] Worker Worker(salt=1838461120, workers=1, host=DESKTOP-V42S030, username=laode, pid=477001) running   Load()
+2024-03-24 04:55:49,493 - INFO - Read Load Query - SUCCESS
+2024-03-24 04:55:53,470 - INFO - Read Extracted Data - SUCCESS
+2024-03-24 04:55:53,471 - INFO - Connect to DWH - SUCCESS
+2024-03-24 04:55:53,733 - INFO - Truncate Bookings Schema in DWH - SUCCESS
+2024-03-24 04:55:53,747 - INFO - LOAD 'bookings.aircrafts_data' - SUCCESS
+2024-03-24 04:55:53,764 - INFO - LOAD 'bookings.airports_data' - SUCCESS
+2024-03-24 04:56:04,988 - INFO - LOAD 'bookings.bookings' - SUCCESS
+2024-03-24 04:56:29,451 - INFO - LOAD 'bookings.tickets' - SUCCESS
+2024-03-24 04:56:29,516 - INFO - LOAD 'bookings.seats' - SUCCESS
+2024-03-24 04:56:32,783 - INFO - LOAD 'bookings.flights' - SUCCESS
+2024-03-24 04:57:37,081 - INFO - LOAD 'bookings.ticket_flights' - SUCCESS
+2024-03-24 04:58:09,886 - INFO - LOAD 'bookings.boarding_passes' - SUCCESS
+2024-03-24 04:58:09,886 - INFO - LOAD All Tables To DWH-Bookings - SUCCESS
+2024-03-24 04:59:15,981 - INFO - LOAD All Tables To DWH-Staging - SUCCESS
+2024-03-24 04:59:16,101 - INFO - [pid 477001] Worker Worker(salt=1838461120, workers=1, host=DESKTOP-V42S030, username=laode, pid=477001) done      Load()
+2024-03-24 04:59:16,102 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-24 04:59:16,105 - INFO - Informed scheduler that task   Load__99914b932b   has status   DONE
+2024-03-24 04:59:16,106 - DEBUG - Asking scheduler for work...
+2024-03-24 04:59:16,108 - DEBUG - Done
+2024-03-24 04:59:16,108 - DEBUG - There are no more tasks to run at this time
+2024-03-24 04:59:16,108 - INFO - Worker Worker(salt=1838461120, workers=1, host=DESKTOP-V42S030, username=laode, pid=477001) was stopped. Shutting down Keep-Alive thread
+2024-03-24 04:59:16,109 - INFO - 
 ===== Luigi Execution Summary =====
 
 Scheduled 2 tasks of which:

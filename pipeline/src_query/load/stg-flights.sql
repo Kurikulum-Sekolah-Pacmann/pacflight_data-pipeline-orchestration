@@ -1,7 +1,11 @@
 INSERT INTO stg.flights 
-    (flight_id, flight_no, scheduled_departure, scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival) 
-VALUES 
-    ('{flight_id}', '{flight_no}', '{scheduled_departure}', '{scheduled_arrival}', '{departure_airport}', '{arrival_airport}', '{status}', '{aircraft_code}', {actual_departure}, {actual_arrival})
+    (flight_id, flight_no, scheduled_departure, scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, created_at, updated_at) 
+
+SELECT 
+    *
+FROM
+    bookings.flights
+
 ON CONFLICT(flight_id) 
 DO UPDATE SET
     flight_no = EXCLUDED.flight_no,
@@ -24,7 +28,7 @@ DO UPDATE SET
                         OR stg.flights.actual_departure <> EXCLUDED.actual_departure
                         OR stg.flights.actual_arrival <> EXCLUDED.actual_arrival
                 THEN 
-                        '{current_local_time}'
+                        CURRENT_TIMESTAMP
                 ELSE
                         stg.flights.updated_at
                 END;

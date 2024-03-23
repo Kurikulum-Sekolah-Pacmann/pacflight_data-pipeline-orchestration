@@ -1,7 +1,11 @@
 INSERT INTO stg.bookings 
-    (book_ref, book_date, total_amount) 
-VALUES 
-    ('{book_ref}', '{book_date}', '{total_amount}')
+    (book_ref, book_date, total_amount, created_at, updated_at) 
+
+SELECT
+    *
+FROM
+    bookings.bookings
+    
 ON CONFLICT(book_ref) 
 DO UPDATE SET
     book_date = EXCLUDED.book_date,
@@ -10,7 +14,7 @@ DO UPDATE SET
                         stg.bookings.book_date <> EXCLUDED.book_date
                         OR stg.bookings.total_amount <> EXCLUDED.total_amount 
                 THEN 
-                        '{current_local_time}'
+                        CURRENT_TIMESTAMP
                 ELSE
                         stg.bookings.updated_at
                 END;

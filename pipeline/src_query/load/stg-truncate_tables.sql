@@ -1,8 +1,8 @@
-TRUNCATE TABLE stg.boarding_passes CASCADE;
-TRUNCATE TABLE stg.ticket_flights CASCADE ;
-TRUNCATE TABLE stg.tickets CASCADE;
-TRUNCATE TABLE stg.bookings CASCADE;
-TRUNCATE TABLE stg.flights CASCADE;
-TRUNCATE TABLE stg.seats CASCADE;
-TRUNCATE TABLE stg.aircrafts_data CASCADE;
-TRUNCATE TABLE stg.airports_data CASCADE;
+TRUNCATE TABLE bookings.boarding_passes CASCADE;
+TRUNCATE TABLE bookings.ticket_flights CASCADE ;
+TRUNCATE TABLE bookings.tickets CASCADE;
+TRUNCATE TABLE bookings.bookings CASCADE;
+TRUNCATE TABLE bookings.flights CASCADE;
+TRUNCATE TABLE bookings.seats CASCADE;
+TRUNCATE TABLE bookings.aircrafts_data CASCADE;
+TRUNCATE TABLE bookings.airports_data CASCADE;

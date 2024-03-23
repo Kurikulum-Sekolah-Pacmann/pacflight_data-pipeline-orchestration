@@ -32,6 +32,56 @@ class Load(luigi.Task):
                             level = logging.INFO, 
                             format = '%(asctime)s - %(levelname)s - %(message)s')
         
+        #----------------------------------------------------------------------------------------------------------------------------------------
+        # Read query to be executed
+        try:
+            # Read query to truncate bookings schema in dwh
+            truncate_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-truncate_tables.sql'
+            )
+
+            # Read load query to staging schema
+            aircrafts_data_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-aircrafts_data.sql'
+            )
+            
+            airports_data_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-airports_data.sql'
+            )
+            
+            bookings_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-bookings.sql'
+            )
+            
+            tickets_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-tickets.sql'
+            )
+            
+            seats_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-seats.sql'
+            )
+            
+            flights_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-flights.sql'
+            )
+            
+            ticket_flights_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-ticket_flights.sql'
+            )
+            
+            boarding_passes_query = read_sql_file(
+                file_path = f'{DIR_LOAD_QUERY}/stg-boarding_passes.sql'
+            )
+            
+            
+            logging.info("Read Load Query - SUCCESS")
+            
+        except Exception:
+            logging.error("Read Load Query - FAILED")
+            raise Exception("Failed to read Load Query")
+        
+        
+        #----------------------------------------------------------------------------------------------------------------------------------------
         # Read Data to be load
         try:
             # Read csv
@@ -58,6 +108,8 @@ class Load(luigi.Task):
             logging.error(f"Read Extracted Data  - FAILED")
             raise Exception("Failed to Read Extracted Data")
         
+        
+        #----------------------------------------------------------------------------------------------------------------------------------------
         # Establish connections to DWH
         try:
             _, dwh_engine = db_connection()
@@ -68,14 +120,10 @@ class Load(luigi.Task):
             raise Exception("Failed to connect to Data Warehouse")
         
         
+        #----------------------------------------------------------------------------------------------------------------------------------------
         # Truncate all tables before load
         # This puropose to avoid errors because duplicate key value violates unique constraint
-        try:
-            # Read query
-            truncate_query = read_sql_file(
-                file_path = f'{DIR_LOAD_QUERY}/stg-truncate_tables.sql'
-            )
-            
+        try:            
             # Split the SQL queries if multiple queries are present
             truncate_query = truncate_query.split(';')
 
@@ -96,92 +144,133 @@ class Load(luigi.Task):
             # Close session
             session.close()
 
-            logging.info(f"Truncate staging tables - SUCCESS")
+            logging.info(f"Truncate Bookings Schema in DWH - SUCCESS")
         
         except Exception:
-            logging.error(f"Truncate staging tables - FAILED")
+            logging.error(f"Truncate Bookings Schema in DWH - FAILED")
             
-            raise Exception("Failed to Truncate Tables")
+            raise Exception("Failed to Truncate Bookings Schema in DWH")
         
         
+        
+        #----------------------------------------------------------------------------------------------------------------------------------------
         # Record start time for loading tables
         start_time = time.time()  
         
-        # Load Tables
+        # Load to tables to booking schema
         try:
-            # Load aircraft tables    
-            aircrafts_data.to_sql('aircrafts_data', 
-                                  con = dwh_engine, 
-                                  if_exists = 'append', 
-                                  index = False, 
-                                  schema = 'stg')
-            logging.info(f"LOAD 'stg.aircrafts_data' - SUCCESS")
             
-            
-            # Load airports_data tables
-            airports_data.to_sql('airports_data', 
-                                 con = dwh_engine, 
-                                 if_exists = 'append', 
-                                 index = False, 
-                                 schema = 'stg')
-            logging.info(f"LOAD 'stg.airports_data' - SUCCESS")
-            
-            
-            # Load bookings tables
-            bookings.to_sql('bookings', 
+            try:
+                # Load aircraft tables    
+                aircrafts_data.to_sql('aircrafts_data', 
+                                    con = dwh_engine, 
+                                    if_exists = 'append', 
+                                    index = False, 
+                                    schema = 'bookings')
+                logging.info(f"LOAD 'bookings.aircrafts_data' - SUCCESS")
+                
+                
+                # Load airports_data tables
+                airports_data.to_sql('airports_data', 
+                                    con = dwh_engine, 
+                                    if_exists = 'append', 
+                                    index = False, 
+                                    schema = 'bookings')
+                logging.info(f"LOAD 'bookings.airports_data' - SUCCESS")
+                
+                
+                # Load bookings tables
+                bookings.to_sql('bookings', 
+                                con = dwh_engine, 
+                                if_exists = 'append', 
+                                index = False, 
+                                schema = 'bookings')
+                logging.info(f"LOAD 'bookings.bookings' - SUCCESS")
+                
+                
+                # Load tickets tables
+                tickets.to_sql('tickets', 
                             con = dwh_engine, 
                             if_exists = 'append', 
                             index = False, 
-                            schema = 'stg')
-            logging.info(f"LOAD 'stg.bookings' - SUCCESS")
+                            schema = 'bookings')
+                logging.info(f"LOAD 'bookings.tickets' - SUCCESS")
+                
+                
+                # Load seats tables
+                seats.to_sql('seats', 
+                            con = dwh_engine, 
+                            if_exists = 'append', 
+                            index = False, 
+                            schema = 'bookings')
+                logging.info(f"LOAD 'bookings.seats' - SUCCESS")
+                
+                
+                # Load flights tables
+                flights.to_sql('flights', 
+                            con = dwh_engine, 
+                            if_exists = 'append', 
+                            index = False, 
+                            schema = 'bookings')
+                logging.info(f"LOAD 'bookings.flights' - SUCCESS")
+                
+                
+                # Load tickets_flights tables
+                ticket_flights.to_sql('ticket_flights', 
+                                    con = dwh_engine, 
+                                    if_exists = 'append', 
+                                    index = False, 
+                                    schema = 'bookings')
+                logging.info(f"LOAD 'bookings.ticket_flights' - SUCCESS")
+                
+                
+                # Load boarding_passes tables
+                boarding_passes.to_sql('boarding_passes', 
+                                    con = dwh_engine, 
+                                    if_exists = 'append', 
+                                    index = False, 
+                                    schema = 'bookings')
+                logging.info(f"LOAD 'bookings.boarding_passes' - SUCCESS")
+                logging.info(f"LOAD All Tables To DWH-Bookings - SUCCESS")
+                
+            except Exception:
+                logging.error(f"LOAD All Tables To DWH-Bookings - FAILED")
+                raise Exception('Failed Load Tables To DWH-Bookings')
             
             
-            # Load tickets tables
-            tickets.to_sql('tickets', 
-                           con = dwh_engine, 
-                           if_exists = 'append', 
-                           index = False, 
-                           schema = 'stg')
-            logging.info(f"LOAD 'stg.tickets' - SUCCESS")
-            
-            
-            # Load seats tables
-            seats.to_sql('seats', 
-                         con = dwh_engine, 
-                         if_exists = 'append', 
-                         index = False, 
-                         schema = 'stg')
-            logging.info(f"LOAD 'stg.seats' - SUCCESS")
-            
-            
-            # Load flights tables
-            flights.to_sql('flights', 
-                           con = dwh_engine, 
-                           if_exists = 'append', 
-                           index = False, 
-                           schema = 'stg')
-            logging.info(f"LOAD 'stg.flights' - SUCCESS")
-            
-            
-            # Load tickets_flights tables
-            ticket_flights.to_sql('ticket_flights', 
-                                  con = dwh_engine, 
-                                  if_exists = 'append', 
-                                  index = False, 
-                                  schema = 'stg')
-            logging.info(f"LOAD 'stg.ticket_flights' - SUCCESS")
-            
-            
-            # Load boarding_passes tables
-            boarding_passes.to_sql('boarding_passes', 
-                                   con = dwh_engine, 
-                                   if_exists = 'append', 
-                                   index = False, 
-                                   schema = 'stg')
-            logging.info(f"LOAD 'stg.boarding_passes' - SUCCESS")
-            logging.info(f"LOAD All Tables To DWH Staging - SUCCESS")
-    
-           # Record end time for loading tables
+            #----------------------------------------------------------------------------------------------------------------------------------------
+            # Load to staging schema
+            try:
+                # List query
+                load_stg_queries = [aircrafts_data_query, airports_data_query, 
+                                    bookings_query, tickets_query, 
+                                    seats_query, flights_query, 
+                                    ticket_flights_query, boarding_passes_query]
+                
+                
+                
+                # Create session
+                Session = sessionmaker(bind = dwh_engine)
+                session = Session()
+
+                # Execute each query
+                for query in load_stg_queries:
+                    query = sqlalchemy.text(query)
+                    session.execute(query)
+                    
+                session.commit()
+                
+                # Close session
+                session.close()
+                
+                logging.info("LOAD All Tables To DWH-Staging - SUCCESS")
+                
+            except Exception:
+                logging.error("LOAD All Tables To DWH-Staging - FAILED")
+                raise Exception('Failed Load Tables To DWH-Staging')
+        
+        
+            # Record end time for loading tables
             end_time = time.time()  
             execution_time = end_time - start_time  # Calculate execution time
             
@@ -198,10 +287,10 @@ class Load(luigi.Task):
             
             # Write Summary to CSV
             summary.to_csv(f"{DIR_TEMP_DATA}/load-summary.csv", index = False)
-        
-        except Exception:
-            logging.error(f"Load tables to DWH Staging - FAILED")
             
+                        
+        #----------------------------------------------------------------------------------------------------------------------------------------
+        except Exception:
             # Get summary
             summary_data = {
                 'timestamp': [datetime.now()],
@@ -216,11 +305,15 @@ class Load(luigi.Task):
             # Write Summary to CSV
             summary.to_csv(f"{DIR_TEMP_DATA}/load-summary.csv", index = False)
             
-            raise Exception('Failed Load Tables To ')
+            logging.error("LOAD All Tables To DWH - FAILED")
+            raise Exception('Failed Load Tables To DWH')   
+        
 
+    #----------------------------------------------------------------------------------------------------------------------------------------
     def output(self):
         return [luigi.LocalTarget(f'{DIR_TEMP_LOG}/logs.log'),
                 luigi.LocalTarget(f'{DIR_TEMP_DATA}/load-summary.csv')]
+        
   
 # Execute the functions when the script is run
 if __name__ == "__main__":

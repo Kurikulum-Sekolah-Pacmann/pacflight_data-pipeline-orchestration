@@ -1,7 +1,11 @@
 INSERT INTO stg.tickets 
-    (ticket_no, book_ref, passenger_id, passenger_name, contact_data) 
-VALUES 
-    ('{ticket_no}', '{book_ref}', '{passenger_id}', '{passenger_name}', '{contact_data}')
+    (ticket_no, book_ref, passenger_id, passenger_name, contact_data, created_at, updated_at) 
+
+SELECT
+    *
+FROM
+    bookings.tickets
+
 ON CONFLICT(ticket_no) 
 DO UPDATE SET
     book_ref = EXCLUDED.book_ref,
@@ -14,7 +18,7 @@ DO UPDATE SET
                         OR stg.tickets.passenger_name <> EXCLUDED.passenger_name
                         OR stg.tickets.contact_data <> EXCLUDED.contact_data
                 THEN 
-                        '{current_local_time}'
+                        CURRENT_TIMESTAMP
                 ELSE
                         stg.tickets.updated_at
                 END;

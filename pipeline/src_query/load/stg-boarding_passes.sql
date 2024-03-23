@@ -1,7 +1,11 @@
 INSERT INTO stg.boarding_passes 
-    (ticket_no, flight_id, boarding_no, seat_no) 
-VALUES 
-    ('{ticket_no}', '{flight_id}', '{boarding_no}', '{seat_no}')
+    (ticket_no, flight_id, boarding_no, seat_no, created_at, updated_at) 
+
+SELECT
+    *
+FROM
+    bookings.boarding_passes
+
 ON CONFLICT(ticket_no, flight_id) 
 DO UPDATE SET
     boarding_no = EXCLUDED.boarding_no,
@@ -10,7 +14,7 @@ DO UPDATE SET
                         stg.boarding_passes.boarding_no <> EXCLUDED.boarding_no 
                         OR stg.boarding_passes.seat_no <> EXCLUDED.seat_no
                 THEN 
-                        '{current_local_time}'
+                        CURRENT_TIMESTAMP
                 ELSE
                         stg.boarding_passes.updated_at
                 END;

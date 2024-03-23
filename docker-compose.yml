@@ -27,7 +27,7 @@ services:
       - ${DWH_POSTGRES_PORT}:5432
     volumes:
       - dwh_volume:/var/lib/postgresql/data
-      - ./helper/db_init/:/docker-entrypoint-initdb.d
+      - ./helper/dwh_init/:/docker-entrypoint-initdb.d
 
 volumes:
   source-volume:

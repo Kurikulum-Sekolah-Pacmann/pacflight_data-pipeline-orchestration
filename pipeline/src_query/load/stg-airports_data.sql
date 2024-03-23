@@ -1,7 +1,11 @@
 INSERT INTO stg.airports_data 
-    (airport_code, airport_name, city, coordinates, timezone) 
-VALUES 
-    ('{airport_code}', '{airport_name}', '{city}', '{coordinates}', '{timezone}')
+    (airport_code, airport_name, city, coordinates, timezone, created_at, updated_at) 
+
+SELECT 
+    *
+FROM
+    bookings.airports_data
+
 ON CONFLICT(airport_code) 
 DO UPDATE SET
     airport_name = EXCLUDED.airport_name,
@@ -14,7 +18,7 @@ DO UPDATE SET
                         OR stg.airports_data.coordinates <> EXCLUDED.coordinates
                         OR stg.airports_data.timezone <> EXCLUDED.timezone
                 THEN 
-                        '{current_local_time}'
+                        CURRENT_TIMESTAMP
                 ELSE
                         stg.airports_data.updated_at
                 END;
