@@ -46,3 +46,583 @@ This progress looks :) because there were no failed tasks or missing dependencie
 
 ===== Luigi Execution Summary =====
 
+2024-03-24 19:55:20,079 - ERROR - EXTRACT 'bookings.aircrafts_data' - FAILED.
+2024-03-24 19:55:20,079 - INFO - Extract All Tables From Sources - FAILED
+2024-03-24 19:55:20,113 - ERROR - [pid 560439] Worker Worker(salt=6663696802, workers=1, host=DESKTOP-V42S030, username=laode, pid=560439) failed    Extract()
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3303, in raw_connection
+    return self.pool.connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    return self._create_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+    self.__connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 643, in connect
+    return dialect.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (127.0.0.1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 57, in run
+    df = pd.read_sql_query(extract_query.format(table_name = table_name), src_engine)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 525, in read_sql_query
+    with pandasSQL_builder(con) as pandas_sql:
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 906, in pandasSQL_builder
+    return SQLDatabase(con, schema, need_transaction)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 1636, in __init__
+    con = self.exit_stack.enter_context(con.connect())
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3279, in connect
+    return self._connection_cls(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 147, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 2443, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3303, in raw_connection
+    return self.pool.connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    return self._create_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+    self.__connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 643, in connect
+    return dialect.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (127.0.0.1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 66, in run
+    raise Exception(f"Failed to extract '{table_name}' tables")
+Exception: Failed to extract 'bookings.aircrafts_data' tables
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/luigi/worker.py", line 210, in run
+    new_deps = self._run_get_new_deps()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/luigi/worker.py", line 138, in _run_get_new_deps
+    task_gen = self.task.run()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 105, in run
+    raise Exception(f"FAILED to execute EXTRACT TASK !!!")
+Exception: FAILED to execute EXTRACT TASK !!!
+2024-03-24 19:55:20,147 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-24 19:55:20,156 - INFO - Informed scheduler that task   Extract__99914b932b   has status   FAILED
+2024-03-24 19:55:20,157 - DEBUG - Asking scheduler for work...
+2024-03-24 19:55:20,159 - DEBUG - Done
+2024-03-24 19:55:20,159 - DEBUG - There are no more tasks to run at this time
+2024-03-24 19:55:20,159 - DEBUG - There are 2 pending tasks possibly being run by other workers
+2024-03-24 19:55:20,159 - DEBUG - There are 2 pending tasks last scheduled by this worker
+2024-03-24 19:55:20,160 - INFO - Worker Worker(salt=6663696802, workers=1, host=DESKTOP-V42S030, username=laode, pid=560439) was stopped. Shutting down Keep-Alive thread
+2024-03-24 19:55:20,161 - INFO - 
+===== Luigi Execution Summary =====
+
+Scheduled 2 tasks of which:
+* 1 failed:
+    - 1 Extract()
+* 1 were left pending, among these:
+    * 1 had failed dependencies:
+        - 1 Load()
+
+This progress looks :( because there were failed tasks
+
+===== Luigi Execution Summary =====
+
+2024-03-24 19:55:24,045 - ERROR - EXTRACT 'bookings.aircrafts_data' - FAILED.
+2024-03-24 19:55:24,045 - INFO - Extract All Tables From Sources - FAILED
+2024-03-24 19:55:24,078 - ERROR - [pid 560477] Worker Worker(salt=8739462248, workers=1, host=DESKTOP-V42S030, username=laode, pid=560477) failed    Extract()
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3303, in raw_connection
+    return self.pool.connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    return self._create_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+    self.__connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 643, in connect
+    return dialect.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (127.0.0.1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 57, in run
+    df = pd.read_sql_query(extract_query.format(table_name = table_name), src_engine)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 525, in read_sql_query
+    with pandasSQL_builder(con) as pandas_sql:
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 906, in pandasSQL_builder
+    return SQLDatabase(con, schema, need_transaction)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 1636, in __init__
+    con = self.exit_stack.enter_context(con.connect())
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3279, in connect
+    return self._connection_cls(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 147, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 2443, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3303, in raw_connection
+    return self.pool.connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    return self._create_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+    self.__connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 643, in connect
+    return dialect.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (127.0.0.1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 66, in run
+    raise Exception(f"Failed to extract '{table_name}' tables")
+Exception: Failed to extract 'bookings.aircrafts_data' tables
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/luigi/worker.py", line 210, in run
+    new_deps = self._run_get_new_deps()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/luigi/worker.py", line 138, in _run_get_new_deps
+    task_gen = self.task.run()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 105, in run
+    raise Exception(f"FAILED to execute EXTRACT TASK !!!")
+Exception: FAILED to execute EXTRACT TASK !!!
+2024-03-24 19:55:24,090 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-24 19:55:24,099 - INFO - Informed scheduler that task   Extract__99914b932b   has status   FAILED
+2024-03-24 19:55:24,099 - DEBUG - Asking scheduler for work...
+2024-03-24 19:55:24,102 - DEBUG - Done
+2024-03-24 19:55:24,102 - DEBUG - There are no more tasks to run at this time
+2024-03-24 19:55:24,102 - DEBUG - There are 2 pending tasks possibly being run by other workers
+2024-03-24 19:55:24,102 - DEBUG - There are 2 pending tasks last scheduled by this worker
+2024-03-24 19:55:24,102 - INFO - Worker Worker(salt=8739462248, workers=1, host=DESKTOP-V42S030, username=laode, pid=560477) was stopped. Shutting down Keep-Alive thread
+2024-03-24 19:55:24,104 - INFO - 
+===== Luigi Execution Summary =====
+
+Scheduled 2 tasks of which:
+* 1 failed:
+    - 1 Extract()
+* 1 were left pending, among these:
+    * 1 had failed dependencies:
+        - 1 Load()
+
+This progress looks :( because there were failed tasks
+
+===== Luigi Execution Summary =====
+
+2024-03-24 19:55:26,710 - ERROR - EXTRACT 'bookings.aircrafts_data' - FAILED.
+2024-03-24 19:55:26,710 - INFO - Extract All Tables From Sources - FAILED
+2024-03-24 19:55:26,744 - ERROR - [pid 560520] Worker Worker(salt=7780380850, workers=1, host=DESKTOP-V42S030, username=laode, pid=560520) failed    Extract()
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3303, in raw_connection
+    return self.pool.connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    return self._create_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+    self.__connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 643, in connect
+    return dialect.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (127.0.0.1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 57, in run
+    df = pd.read_sql_query(extract_query.format(table_name = table_name), src_engine)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 525, in read_sql_query
+    with pandasSQL_builder(con) as pandas_sql:
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 906, in pandasSQL_builder
+    return SQLDatabase(con, schema, need_transaction)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 1636, in __init__
+    con = self.exit_stack.enter_context(con.connect())
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3279, in connect
+    return self._connection_cls(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 147, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 2443, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3303, in raw_connection
+    return self.pool.connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    return self._create_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+    self.__connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 643, in connect
+    return dialect.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (127.0.0.1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 66, in run
+    raise Exception(f"Failed to extract '{table_name}' tables")
+Exception: Failed to extract 'bookings.aircrafts_data' tables
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/luigi/worker.py", line 210, in run
+    new_deps = self._run_get_new_deps()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/luigi/worker.py", line 138, in _run_get_new_deps
+    task_gen = self.task.run()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 105, in run
+    raise Exception(f"FAILED to execute EXTRACT TASK !!!")
+Exception: FAILED to execute EXTRACT TASK !!!
+2024-03-24 19:55:26,757 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-24 19:55:26,766 - INFO - Informed scheduler that task   Extract__99914b932b   has status   FAILED
+2024-03-24 19:55:26,766 - DEBUG - Asking scheduler for work...
+2024-03-24 19:55:26,769 - DEBUG - Done
+2024-03-24 19:55:26,769 - DEBUG - There are no more tasks to run at this time
+2024-03-24 19:55:26,769 - DEBUG - There are 2 pending tasks possibly being run by other workers
+2024-03-24 19:55:26,769 - DEBUG - There are 2 pending tasks last scheduled by this worker
+2024-03-24 19:55:26,770 - INFO - Worker Worker(salt=7780380850, workers=1, host=DESKTOP-V42S030, username=laode, pid=560520) was stopped. Shutting down Keep-Alive thread
+2024-03-24 19:55:26,771 - INFO - 
+===== Luigi Execution Summary =====
+
+Scheduled 2 tasks of which:
+* 1 failed:
+    - 1 Extract()
+* 1 were left pending, among these:
+    * 1 had failed dependencies:
+        - 1 Load()
+
+This progress looks :( because there were failed tasks
+
+===== Luigi Execution Summary =====
+
+2024-03-24 19:55:29,435 - ERROR - EXTRACT 'bookings.aircrafts_data' - FAILED.
+2024-03-24 19:55:29,436 - INFO - Extract All Tables From Sources - FAILED
+2024-03-24 19:55:29,466 - ERROR - [pid 560563] Worker Worker(salt=6500843247, workers=1, host=DESKTOP-V42S030, username=laode, pid=560563) failed    Extract()
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3303, in raw_connection
+    return self.pool.connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    return self._create_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+    self.__connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 643, in connect
+    return dialect.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (127.0.0.1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 57, in run
+    df = pd.read_sql_query(extract_query.format(table_name = table_name), src_engine)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 525, in read_sql_query
+    with pandasSQL_builder(con) as pandas_sql:
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 906, in pandasSQL_builder
+    return SQLDatabase(con, schema, need_transaction)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/pandas/io/sql.py", line 1636, in __init__
+    con = self.exit_stack.enter_context(con.connect())
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3279, in connect
+    return self._connection_cls(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 147, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 2443, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 3303, in raw_connection
+    return self.pool.connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    return self._create_connection()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+    self.__connect()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 643, in connect
+    return dialect.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (127.0.0.1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 66, in run
+    raise Exception(f"Failed to extract '{table_name}' tables")
+Exception: Failed to extract 'bookings.aircrafts_data' tables
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/luigi/worker.py", line 210, in run
+    new_deps = self._run_get_new_deps()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/.venv/lib/python3.10/site-packages/luigi/worker.py", line 138, in _run_get_new_deps
+    task_gen = self.task.run()
+  File "/home/laode/pacmann/project/pacflight_data-pipeline-orchestration/pipeline/extract.py", line 105, in run
+    raise Exception(f"FAILED to execute EXTRACT TASK !!!")
+Exception: FAILED to execute EXTRACT TASK !!!
+2024-03-24 19:55:29,481 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-24 19:55:29,494 - INFO - Informed scheduler that task   Extract__99914b932b   has status   FAILED
+2024-03-24 19:55:29,495 - DEBUG - Asking scheduler for work...
+2024-03-24 19:55:29,500 - DEBUG - Done
+2024-03-24 19:55:29,501 - DEBUG - There are no more tasks to run at this time
+2024-03-24 19:55:29,501 - DEBUG - There are 2 pending tasks possibly being run by other workers
+2024-03-24 19:55:29,501 - DEBUG - There are 2 pending tasks last scheduled by this worker
+2024-03-24 19:55:29,501 - INFO - Worker Worker(salt=6500843247, workers=1, host=DESKTOP-V42S030, username=laode, pid=560563) was stopped. Shutting down Keep-Alive thread
+2024-03-24 19:55:29,503 - INFO - 
+===== Luigi Execution Summary =====
+
+Scheduled 2 tasks of which:
+* 1 failed:
+    - 1 Extract()
+* 1 were left pending, among these:
+    * 1 had failed dependencies:
+        - 1 Load()
+
+This progress looks :( because there were failed tasks
+
+===== Luigi Execution Summary =====
+
+2024-03-24 19:58:07,304 - INFO - EXTRACT 'bookings.aircrafts_data' - SUCCESS.
+2024-03-24 19:58:07,315 - INFO - EXTRACT 'bookings.airports_data' - SUCCESS.
+2024-03-24 19:58:11,235 - INFO - EXTRACT 'bookings.bookings' - SUCCESS.
+2024-03-24 19:58:17,160 - INFO - EXTRACT 'bookings.tickets' - SUCCESS.
+2024-03-24 19:58:17,311 - INFO - EXTRACT 'bookings.seats' - SUCCESS.
+2024-03-24 19:58:18,655 - INFO - EXTRACT 'bookings.flights' - SUCCESS.
+2024-03-24 19:58:33,761 - INFO - EXTRACT 'bookings.ticket_flights' - SUCCESS.
+2024-03-24 19:58:41,826 - INFO - EXTRACT 'bookings.boarding_passes' - SUCCESS.
+2024-03-24 19:58:41,826 - INFO - Extract All Tables From Sources - SUCCESS
+2024-03-24 19:58:41,865 - INFO - [pid 561704] Worker Worker(salt=9671029866, workers=1, host=DESKTOP-V42S030, username=laode, pid=561704) done      Extract()
+2024-03-24 19:58:41,867 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-24 19:58:41,871 - INFO - Informed scheduler that task   Extract__99914b932b   has status   DONE
+2024-03-24 19:58:41,871 - DEBUG - Asking scheduler for work...
+2024-03-24 19:58:41,875 - DEBUG - Pending tasks: 1
+2024-03-24 19:58:41,875 - INFO - [pid 561704] Worker Worker(salt=9671029866, workers=1, host=DESKTOP-V42S030, username=laode, pid=561704) running   Load()
+2024-03-24 19:58:41,877 - INFO - Read Load Query - SUCCESS
+2024-03-24 19:58:45,184 - INFO - Read Extracted Data - SUCCESS
+2024-03-24 19:58:45,185 - INFO - Connect to DWH - SUCCESS
+2024-03-24 19:58:45,380 - INFO - Truncate Bookings Schema in DWH - SUCCESS
+2024-03-24 19:58:45,395 - INFO - LOAD 'bookings.aircrafts_data' - SUCCESS
+2024-03-24 19:58:45,412 - INFO - LOAD 'bookings.airports_data' - SUCCESS
+2024-03-24 19:58:56,265 - INFO - LOAD 'bookings.bookings' - SUCCESS
+2024-03-24 19:59:22,358 - INFO - LOAD 'bookings.tickets' - SUCCESS
+2024-03-24 19:59:22,435 - INFO - LOAD 'bookings.seats' - SUCCESS
+2024-03-24 19:59:25,258 - INFO - LOAD 'bookings.flights' - SUCCESS
+2024-03-24 20:00:33,994 - INFO - LOAD 'bookings.ticket_flights' - SUCCESS
+2024-03-24 20:01:06,626 - INFO - LOAD 'bookings.boarding_passes' - SUCCESS
+2024-03-24 20:01:06,626 - INFO - LOAD All Tables To DWH-Bookings - SUCCESS
+2024-03-24 20:02:35,292 - INFO - LOAD All Tables To DWH-Staging - SUCCESS
+2024-03-24 20:02:35,358 - INFO - [pid 561704] Worker Worker(salt=9671029866, workers=1, host=DESKTOP-V42S030, username=laode, pid=561704) done      Load()
+2024-03-24 20:02:35,359 - DEBUG - 1 running tasks, waiting for next task to finish
+2024-03-24 20:02:35,361 - INFO - Informed scheduler that task   Load__99914b932b   has status   DONE
+2024-03-24 20:02:35,361 - DEBUG - Asking scheduler for work...
+2024-03-24 20:02:35,363 - DEBUG - Done
+2024-03-24 20:02:35,363 - DEBUG - There are no more tasks to run at this time
+2024-03-24 20:02:35,364 - INFO - Worker Worker(salt=9671029866, workers=1, host=DESKTOP-V42S030, username=laode, pid=561704) was stopped. Shutting down Keep-Alive thread
+2024-03-24 20:02:35,365 - INFO - 
+===== Luigi Execution Summary =====
+
+Scheduled 2 tasks of which:
+* 2 ran successfully:
+    - 1 Extract()
+    - 1 Load()
+
+This progress looks :) because there were no failed tasks or missing dependencies
+
+===== Luigi Execution Summary =====
+

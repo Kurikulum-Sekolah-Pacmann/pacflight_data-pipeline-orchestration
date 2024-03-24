@@ -10,11 +10,5 @@ ON CONFLICT(ticket_no, flight_id)
 DO UPDATE SET
     fare_conditions = EXCLUDED.fare_conditions,
     amount = EXCLUDED.amount,
-    updated_at = CASE WHEN 
-                        stg.ticket_flights.fare_conditions <> EXCLUDED.fare_conditions 
-                        OR stg.ticket_flights.amount <> EXCLUDED.amount
-                THEN 
-                        CURRENT_TIMESTAMP
-                ELSE
-                        stg.ticket_flights.updated_at
-                END;
+    created_at = EXCLUDED.created_at,
+    updated_at = EXCLUDED.updated_at;
