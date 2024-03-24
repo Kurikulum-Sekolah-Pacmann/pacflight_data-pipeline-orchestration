@@ -4,12 +4,12 @@ import pandas as pd
 import time
 import sqlalchemy
 from datetime import datetime
-from extract import Extract
-from utils.db_conn import db_connection
-from utils.read_sql import read_sql_file
-from utils.concat_dataframe import concat_dataframes
-from utils.copy_log import copy_log
-from utils.delete_temp_data import delete_temp
+from pipeline.extract import Extract
+from pipeline.utils.db_conn import db_connection
+from pipeline.utils.read_sql import read_sql_file
+from pipeline.utils.concat_dataframe import concat_dataframes
+from pipeline.utils.copy_log import copy_log
+from pipeline.utils.delete_temp_data import delete_temp
 from sqlalchemy.orm import sessionmaker
 import os
 
@@ -156,7 +156,7 @@ class Load(luigi.Task):
         #----------------------------------------------------------------------------------------------------------------------------------------
         # Record start time for loading tables
         start_time = time.time()  
-        
+        logging.info("==================================STARTING LOAD DATA=======================================")
         # Load to tables to booking schema
         try:
             
@@ -308,43 +308,9 @@ class Load(luigi.Task):
             logging.error("LOAD All Tables To DWH - FAILED")
             raise Exception('Failed Load Tables To DWH')   
         
-
+        logging.info("==================================ENDING LOAD DATA=======================================")
+        
     #----------------------------------------------------------------------------------------------------------------------------------------
     def output(self):
         return [luigi.LocalTarget(f'{DIR_TEMP_LOG}/logs.log'),
                 luigi.LocalTarget(f'{DIR_TEMP_DATA}/load-summary.csv')]
-        
-  
-# Execute the functions when the script is run
-if __name__ == "__main__":
-    # Build the task
-    luigi.build([Extract(),
-                 Load()])
-    
-    # Concat temp extract summary to final summary
-    concat_dataframes(
-        df1 = pd.read_csv(f'{DIR_ROOT_PROJECT}/pipeline_summary.csv'),
-        df2 = pd.read_csv(f'{DIR_TEMP_DATA}/extract-summary.csv')
-    )
-    
-    # Concat temp extract summary to final summary
-    concat_dataframes(
-        df1 = pd.read_csv(f'{DIR_ROOT_PROJECT}/pipeline_summary.csv'),
-        df2 = pd.read_csv(f'{DIR_TEMP_DATA}/load-summary.csv')
-    )
-    
-    # Append log from temp to final log
-    copy_log(
-        source_file = f'{DIR_TEMP_LOG}/logs.log',
-        destination_file = f'{DIR_LOG}/logs.log'
-    )
-    
-    # Delete temp data
-    delete_temp(
-        directory = f'{DIR_TEMP_DATA}'
-    )
-    
-    # Delete temp log
-    delete_temp(
-        directory = f'{DIR_TEMP_LOG}'
-    )

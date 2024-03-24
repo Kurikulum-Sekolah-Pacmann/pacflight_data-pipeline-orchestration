@@ -3,11 +3,10 @@ from datetime import datetime
 import logging
 import time
 import pandas as pd
-from utils.db_conn import db_connection
-from utils.read_sql import read_sql_file
-from utils.concat_dataframe import concat_dataframes
-from utils.copy_log import copy_log
-from dotenv import load_dotenv
+from pipeline.utils.db_conn import db_connection
+from pipeline.utils.read_sql import read_sql_file
+from pipeline.utils.concat_dataframe import concat_dataframes
+from pipeline.utils.copy_log import copy_log
 import os
 
 # Define DIR
@@ -50,6 +49,7 @@ class Extract(luigi.Task):
             )
             
             start_time = time.time()  # Record start time
+            logging.info("==================================STARTING EXTRACT DATA=======================================")
             
             for index, table_name in enumerate(self.tables_to_extract):
                 try:
@@ -103,6 +103,8 @@ class Extract(luigi.Task):
             
             # Write exception
             raise Exception(f"FAILED to execute EXTRACT TASK !!!")
+        
+        logging.info("==================================ENDING EXTRACT DATA=======================================")
                 
     def output(self):
         outputs = []
@@ -113,17 +115,3 @@ class Extract(luigi.Task):
             
         outputs.append(luigi.LocalTarget(f'{DIR_TEMP_LOG}/logs.log'))
         return outputs
-    
-# Execute the functions when the script is run
-if __name__ == "__main__":
-    luigi.build([Extract()])
-    
-    concat_dataframes(
-        df1 = pd.read_csv(f'{DIR_ROOT_PROJECT}/pipeline_summary.csv'),
-        df2 = pd.read_csv(f'{DIR_TEMP_DATA}/extract-summary.csv')
-    )
-    
-    copy_log(
-        source_file = f'{DIR_TEMP_LOG}/logs.log',
-        destination_file = f'{DIR_LOG}/logs.log'
-    )
