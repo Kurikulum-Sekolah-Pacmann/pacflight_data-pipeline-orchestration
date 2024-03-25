@@ -7,9 +7,6 @@ from datetime import datetime
 from pipeline.extract import Extract
 from pipeline.utils.db_conn import db_connection
 from pipeline.utils.read_sql import read_sql_file
-from pipeline.utils.concat_dataframe import concat_dataframes
-from pipeline.utils.copy_log import copy_log
-from pipeline.utils.delete_temp_data import delete_temp
 from sqlalchemy.orm import sessionmaker
 import os
 
@@ -37,7 +34,7 @@ class Load(luigi.Task):
         try:
             # Read query to truncate bookings schema in dwh
             truncate_query = read_sql_file(
-                file_path = f'{DIR_LOAD_QUERY}/stg-truncate_tables.sql'
+                file_path = f'{DIR_LOAD_QUERY}/bookings-truncate_tables.sql'
             )
 
             # Read load query to staging schema
@@ -246,8 +243,6 @@ class Load(luigi.Task):
                                     bookings_query, tickets_query, 
                                     seats_query, flights_query, 
                                     ticket_flights_query, boarding_passes_query]
-                
-                
                 
                 # Create session
                 Session = sessionmaker(bind = dwh_engine)

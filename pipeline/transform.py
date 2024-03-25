@@ -4,13 +4,9 @@ import pandas as pd
 import time
 import sqlalchemy
 from datetime import datetime
-from pipeline.extract import Extract
 from pipeline.load import Load
 from pipeline.utils.db_conn import db_connection
 from pipeline.utils.read_sql import read_sql_file
-from pipeline.utils.concat_dataframe import concat_dataframes
-from pipeline.utils.copy_log import copy_log
-from pipeline.utils.delete_temp_data import delete_temp
 from sqlalchemy.orm import sessionmaker
 import os
 

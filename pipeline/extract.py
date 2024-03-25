@@ -5,8 +5,6 @@ import time
 import pandas as pd
 from pipeline.utils.db_conn import db_connection
 from pipeline.utils.read_sql import read_sql_file
-from pipeline.utils.concat_dataframe import concat_dataframes
-from pipeline.utils.copy_log import copy_log
 import os
 
 # Define DIR
