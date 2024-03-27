@@ -33,9 +33,9 @@ class Transform(luigi.Task):
         # Read query to be executed
         try:
             # Read query to truncate bookings schema in dwh
-            truncate_query = read_sql_file(
-                file_path = f'{DIR_TRANSFORM_QUERY}/truncate-fact-tables.sql'
-            )
+            # truncate_query = read_sql_file(
+            #     file_path = f'{DIR_TRANSFORM_QUERY}/truncate-fact-tables.sql'
+            # )
 
             # Read transform query to final schema
             dim_aircraft_query = read_sql_file(
@@ -120,17 +120,8 @@ class Transform(luigi.Task):
             session.execute(query)
             logging.info("Transform to 'final.dim_seat' - SUCCESS")
             
-            # Truncate fact tables
-            # Split the SQL queries if multiple queries are present
-            truncate_query = truncate_query.split(';')
-
-            # Remove newline characters and leading/trailing whitespaces
-            truncate_query = [query.strip() for query in truncate_query if query.strip()]
-            
-            for query in truncate_query:
-                query = sqlalchemy.text(query)
-                session.execute(query)
-            logging.info("Truncate Fact Tables - SUCCESS")
+            # Commit transaction
+            session.commit()
             
             # Transform to final.fct_boarding_pass
             query = sqlalchemy.text(fct_boarding_pass_query)
