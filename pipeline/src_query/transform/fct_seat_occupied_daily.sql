@@ -60,15 +60,7 @@ with
 	        sf.status as status,
 	        cts.total_seat as total_seat,
 	        cso.seat_occupied as seat_occupied,
-	        (cts.total_seat - cso.seat_occupied) as empty_seats,
-	        LEAST(MIN(sf.created_at), 
-                    MIN(da1.created_at),
-                    MIN(da2.created_at),
-                    MIN(dac.created_at)) AS created_at,
-            GREATEST(MAX(sf.updated_at), 
-                    MAX(da1.updated_at),
-                    MAX(da2.updated_at),
-                    MAX(dac.updated_at)) AS updated_at
+	        (cts.total_seat - cso.seat_occupied) as empty_seats
      
 	    from stg_flights sf
 	    join dim_dates dd 
@@ -83,18 +75,6 @@ with
 	        on cso.flight_id = sf.flight_id
 	    join cnt_total_seats cts 
 	        on cts.aircraft_code = sf.aircraft_code
-	        
-	    group by
-	    	dd.date_id,
-	        sf.flight_id,
-	        sf.flight_no,
-	        da1.airport_id,
-	        da2.airport_id,
-	        dac.aircraft_id,
-	        sf.status,
-	        cts.total_seat,
-	        cso.seat_occupied,
-	        empty_seats
 	)
 	
 INSERT INTO final.fct_seat_occupied_daily(
@@ -107,12 +87,22 @@ INSERT INTO final.fct_seat_occupied_daily(
 	status, 
 	total_seat, 
 	seat_occupied, 
-	empty_seats, 
-	created_at, 
-	updated_at
+	empty_seats
 )
 
 select 
 	* 
 from 
-	final_fct_seat_occupied_daily;
+	final_fct_seat_occupied_daily
+
+ON CONFLICT(date_flight, flight_nk) 
+DO UPDATE SET
+    flight_no = EXCLUDED.flight_no,
+	departure_airport = EXCLUDED.departure_airport,
+	arrival_airport = EXCLUDED.arrival_airport,
+	aircraft_code = EXCLUDED.aircraft_code,
+	status = EXCLUDED.status,
+	total_seat = EXCLUDED.total_seat,
+	seat_occupied = EXCLUDED.seat_occupied,
+	empty_seats = EXCLUDED.empty_seats,
+	updated_at = CURRENT_TIMESTAMP;

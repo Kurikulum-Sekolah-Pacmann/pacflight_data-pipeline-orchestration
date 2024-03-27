@@ -1,8 +1,17 @@
 INSERT INTO stg.flights 
-    (flight_id, flight_no, scheduled_departure, scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, created_at, updated_at) 
+    (flight_id, flight_no, scheduled_departure, scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival) 
 
 SELECT 
-    *
+   flight_id, 
+   flight_no, 
+   scheduled_departure, 
+   scheduled_arrival, 
+   departure_airport, 
+   arrival_airport, 
+   status, 
+   aircraft_code, 
+   actual_departure, 
+   actual_arrival 
 FROM
     bookings.flights
 
@@ -17,5 +26,4 @@ DO UPDATE SET
     aircraft_code = EXCLUDED.aircraft_code,
     actual_departure = EXCLUDED.actual_departure,
     actual_arrival = EXCLUDED.actual_arrival,
-    created_at = EXCLUDED.created_at,
-    updated_at = EXCLUDED.updated_at;
+    updated_at = CURRENT_TIMESTAMP;

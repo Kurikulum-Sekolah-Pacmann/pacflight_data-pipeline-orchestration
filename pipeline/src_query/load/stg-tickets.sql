@@ -1,8 +1,12 @@
 INSERT INTO stg.tickets 
-    (ticket_no, book_ref, passenger_id, passenger_name, contact_data, created_at, updated_at) 
+    (ticket_no, book_ref, passenger_id, passenger_name, contact_data) 
 
 SELECT
-    *
+    ticket_no, 
+    book_ref, 
+    passenger_id, 
+    passenger_name, 
+    contact_data
 FROM
     bookings.tickets
 
@@ -12,5 +16,4 @@ DO UPDATE SET
     passenger_id = EXCLUDED.passenger_id,
     passenger_name = EXCLUDED.passenger_name,
     contact_data = EXCLUDED.contact_data,
-    created_at = EXCLUDED.created_at,
-    updated_at = EXCLUDED.updated_at;
+    updated_at = CURRENT_TIMESTAMP;

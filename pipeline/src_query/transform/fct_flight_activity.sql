@@ -50,15 +50,7 @@ with
 	        sf.status as status,
 	        (sf.actual_departure - sf.scheduled_departure) as delay_departure,
 	        (sf.actual_arrival - sf.scheduled_arrival) as delay_arrival,
-	        (sf.actual_arrival - sf.actual_departure) as travel_time,
-            LEAST(MIN(sf.created_at), 
-                    MIN(da1.created_at),
-                    MIN(da2.created_at),
-                    MIN(dac.created_at)) AS created_at,
-            GREATEST(MAX(sf.updated_at), 
-                    MAX(da1.updated_at),
-                    MAX(da2.updated_at),
-                    MAX(dac.updated_at)) AS updated_at
+	        (sf.actual_arrival - sf.actual_departure) as travel_time
 
 	    from stg_flights sf
 	    join dim_dates dd1
@@ -99,66 +91,65 @@ with
 	        on dt7.time_actual::time = (sf.actual_arrival)::time
 	    join dim_times dt8
 	        on dt8.time_actual::time = (sf.actual_arrival AT TIME ZONE 'UTC')::time
+	)
 
-        group by
-	        sf.flight_id,
-	        sf.flight_no,
-	        dd1.date_id,
-	        dd2.date_id,
-	        dt1.time_id,
-	        dt2.time_id,
-	        dd3.date_id,
-	        dd4.date_id,
-	        dt3.time_id,
-	        dt4.time_id,
-	        da1.airport_id,
-	        da2.airport_id,
-	        dac.aircraft_id,
-	        dd5.date_id,
-	        dd6.date_id,
-	        dt5.time_id,
-	        dt6.time_id,
-	        dd7.date_id,
-	        dd8.date_id,
-	        dt7.time_id,
-	        dt8.time_id,
-	        sf.status,
-	        delay_departure,
-	        delay_arrival,
-	        travel_time
-	)
+INSERT INTO "final".fct_flight_activity(
+	flight_nk, 
+	flight_no, 
+	scheduled_departure_date_local, 
+	scheduled_departure_date_utc, 
+	scheduled_departure_time_local, 
+	scheduled_departure_time_utc, 
+	scheduled_arrival_date_local, 
+	scheduled_arrival_date_utc, 
+	scheduled_arrival_time_local, 
+	scheduled_arrival_time_utc, 
+	departure_airport, 
+	arrival_airport, 
+	aircraft_code, 
+	actual_departure_date_local, 
+	actual_departure_date_utc, 
+	actual_departure_time_local, 
+	actual_departure_time_utc, 
+	actual_arrival_date_local, 
+	actual_arrival_date_utc, 
+	actual_arrival_time_local, 
+	actual_arrival_time_utc, 
+	status, 
+	delay_departure, 
+	delay_arrival, 
+	travel_time
+)
 	
-	INSERT INTO "final".fct_flight_activity(
-		flight_nk, 
-		flight_no, 
-		scheduled_departure_date_local, 
-		scheduled_departure_date_utc, 
-		scheduled_departure_time_local, 
-		scheduled_departure_time_utc, 
-		scheduled_arrival_date_local, 
-		scheduled_arrival_date_utc, 
-		scheduled_arrival_time_local, 
-		scheduled_arrival_time_utc, 
-		departure_airport, 
-		arrival_airport, 
-		aircraft_code, 
-		actual_departure_date_local, 
-		actual_departure_date_utc, 
-		actual_departure_time_local, 
-		actual_departure_time_utc, 
-		actual_arrival_date_local, 
-		actual_arrival_date_utc, 
-		actual_arrival_time_local, 
-		actual_arrival_time_utc, 
-		status, 
-		delay_departure, 
-		delay_arrival, 
-		travel_time, 
-		created_at, 
-		updated_at
-	)
-	
-	select 
-		* 
-	from 
-		final_fct_flight_activities;
+select 
+	* 
+from 
+	final_fct_flight_activities
+
+ON CONFLICT(flight_nk) 
+DO UPDATE SET
+	flight_no = EXCLUDED.flight_no,
+	scheduled_departure_date_local = EXCLUDED.scheduled_departure_date_local,
+	scheduled_departure_date_utc = EXCLUDED.scheduled_departure_date_utc,
+	scheduled_departure_time_local = EXCLUDED.scheduled_departure_time_local,
+	scheduled_departure_time_utc = EXCLUDED.scheduled_departure_time_utc,
+	scheduled_arrival_date_local = EXCLUDED.scheduled_arrival_date_local,
+	scheduled_arrival_date_utc = EXCLUDED.scheduled_arrival_date_utc,
+	scheduled_arrival_time_local = EXCLUDED.scheduled_arrival_time_local,
+	scheduled_arrival_time_utc = EXCLUDED.scheduled_arrival_time_utc,
+	departure_airport = EXCLUDED.departure_airport,
+	arrival_airport = EXCLUDED.arrival_airport,
+	aircraft_code = EXCLUDED.aircraft_code,
+	actual_departure_date_local = EXCLUDED.actual_departure_date_local,
+	actual_departure_date_utc = EXCLUDED.actual_departure_date_utc,
+	actual_departure_time_local = EXCLUDED.actual_departure_time_local,
+	actual_departure_time_utc = EXCLUDED.actual_departure_time_utc,
+	actual_arrival_date_local = EXCLUDED.actual_arrival_date_local,
+	actual_arrival_date_utc = EXCLUDED.actual_arrival_date_utc,
+	actual_arrival_time_local = EXCLUDED.actual_arrival_time_local,
+	actual_arrival_time_utc = EXCLUDED.actual_arrival_time_utc,
+	status = EXCLUDED.status,
+	delay_departure = EXCLUDED.delay_departure,
+	delay_arrival = EXCLUDED.delay_arrival,
+	travel_time = EXCLUDED.travel_time,
+	updated_at = CURRENT_TIMESTAMP;

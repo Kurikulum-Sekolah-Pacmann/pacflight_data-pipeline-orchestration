@@ -3,9 +3,7 @@ INSERT INTO final.dim_passenger (
     passenger_nk,
     passenger_name,
     phone,
-    email,
-    created_at,
-    updated_at
+    email
 )
 
 SELECT
@@ -13,9 +11,7 @@ SELECT
 	t.passenger_id AS passenger_nk,
 	t.passenger_name,
 	t.contact_data->>'phone' AS phone,
-    t.contact_data->>'email' AS email,
-    t.created_at,
-    t.updated_at
+    t.contact_data->>'email' AS email
 	
 FROM
     stg.tickets t 
@@ -26,5 +22,4 @@ DO UPDATE SET
     passenger_name = EXCLUDED.passenger_name,
     phone = EXCLUDED.phone,
     email = EXCLUDED.email,
-    created_at = EXCLUDED.created_at,
-    updated_at = EXCLUDED.updated_at;
+    updated_at = CURRENT_TIMESTAMP;

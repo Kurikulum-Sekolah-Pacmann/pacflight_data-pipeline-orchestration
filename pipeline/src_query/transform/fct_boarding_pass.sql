@@ -65,23 +65,7 @@ with
 	        dac.aircraft_id as aircraft_code,
 	        sf.status as status,
 	        stf.fare_conditions as fare_conditions,
-	        sbp.seat_no,
-            LEAST(MIN(st.created_at), 
-                MIN(dp.created_at),
-                MIN(stf.created_at),
-                MIN(sf.created_at),
-                MIN(da1.created_at),
-                MIN(da2.created_at),
-                MIN(dac.created_at),
-                MIN(sbp.created_at)) AS created_at,
-            GREATEST(MAX(st.updated_at), 
-                    MAX(dp.updated_at),
-                    MAX(stf.updated_at),
-                    MAX(sf.updated_at),
-                    MAX(da1.updated_at),
-                    MAX(da2.updated_at),
-                    MAX(dac.updated_at),
-                    MAX(sbp.updated_at)) AS updated_at
+	        sbp.seat_no
 	        
 	    from stg_tickets st
 	    join dim_passengers dp
@@ -115,28 +99,6 @@ with
 	    join stg_boarding_passes sbp
 	        on sbp.flight_id = stf.flight_id
 	        and sbp.ticket_no = stf.ticket_no
-
-        group by
-	        st.ticket_no,
-	        st.book_ref,
-	        dp.passenger_id,
-	        stf.flight_id,
-	        sf.flight_no,
-	        sbp.boarding_no,
-	        dd1.date_id,
-	        dd2.date_id,
-	        dt1.time_id,
-	        dt2.time_id,
-	        dd3.date_id,
-	        dd4.date_id,
-	        dt3.time_id,
-	        dt4.time_id,
-	        da1.airport_id,
-	        da2.airport_id,
-	        dac.aircraft_id,
-	        sf.status,
-	        stf.fare_conditions,
-	        sbp.seat_no
 	)
 
 INSERT INTO final.fct_boarding_pass (
@@ -159,12 +121,32 @@ INSERT INTO final.fct_boarding_pass (
     aircraft_code, 
     status, 
     fare_conditions, 
-    seat_no, 
-    created_at, 
-    updated_at
+    seat_no
 )
 
 select 
 	* 
 from 
-	final_fct_boarding_pass;
+	final_fct_boarding_pass
+
+ON CONFLICT(ticket_no, flight_id, boarding_no) 
+DO UPDATE SET
+	book_ref = EXCLUDED.book_ref,
+	passenger_id = EXCLUDED.passenger_id,
+	flight_no = EXCLUDED.flight_no,
+	scheduled_departure_date_local = EXCLUDED.scheduled_departure_date_local,
+	scheduled_departure_date_utc = EXCLUDED.scheduled_departure_date_utc,
+	scheduled_departure_time_local = EXCLUDED.scheduled_departure_time_local,
+	scheduled_departure_time_utc = EXCLUDED.scheduled_departure_time_utc,
+	scheduled_arrival_date_local = EXCLUDED.scheduled_arrival_date_local,
+	scheduled_arrival_date_utc = EXCLUDED.scheduled_arrival_date_utc,
+	scheduled_arrival_time_local = EXCLUDED.scheduled_arrival_time_local,
+	scheduled_arrival_time_utc = EXCLUDED.scheduled_arrival_time_utc,
+	departure_airport = EXCLUDED.departure_airport,
+	arrival_airport = EXCLUDED.arrival_airport,
+	aircraft_code = EXCLUDED.aircraft_code,
+	status = EXCLUDED.status,
+	fare_conditions = EXCLUDED.fare_conditions,
+	seat_no = EXCLUDED.seat_no,
+	updated_at = CURRENT_TIMESTAMP;
+

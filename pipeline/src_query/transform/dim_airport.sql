@@ -4,9 +4,7 @@ INSERT INTO final.dim_airport (
     airport_name,
     city,
     coordinates,
-    timezone,
-    created_at,
-    updated_at
+    timezone
 )
 
 SELECT
@@ -15,9 +13,7 @@ SELECT
     ad.airport_name,
     ad.city->>'en' AS city,
     ad.coordinates,
-    ad.timezone,
-    ad.created_at,
-    ad.updated_at
+    ad.timezone
 	
 FROM
     stg.airports_data ad 
@@ -29,6 +25,5 @@ DO UPDATE SET
     city = EXCLUDED.city,
     coordinates = EXCLUDED.coordinates,
     timezone = EXCLUDED.timezone,
-    created_at = EXCLUDED.created_at,
-    updated_at = EXCLUDED.updated_at;
+    updated_at = CURRENT_TIMESTAMP;
                

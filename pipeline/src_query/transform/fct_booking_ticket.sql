@@ -31,21 +31,7 @@ with stg_fct_booking_ticket as (
 	    dd9.date_id AS actual_arrival_date_local, 
 	    dd10.date_id AS actual_arrival_date_utc, 
 	    dt9.time_id AS actual_arrival_time_local,  
-	    dt10.time_id AS actual_arrival_time_utc,
-	    LEAST(MIN(sb.created_at), 
-	    	  MIN(st.created_at),
-	    	  MIN(stf.created_at),
-	    	  MIN(sf.created_at),
-	    	  MIN(da1.created_at),
-	    	  MIN(da2.created_at),
-	    	  MIN(dac.created_at)) AS created_at,
-	    GREATEST(MAX(sb.updated_at), 
-	    	  	 MAX(st.updated_at),
-	    	     MAX(stf.updated_at),
-	    	     MAX(sf.updated_at),
-	    	     MAX(da1.updated_at),
-	    	     MAX(da2.updated_at),
-	    	     MAX(dac.updated_at)) AS updated_at
+	    dt10.time_id AS actual_arrival_time_utc
 	    
 	FROM stg.bookings sb
 	
@@ -104,39 +90,6 @@ with stg_fct_booking_ticket as (
 	JOIN final.dim_time dt10
 	    ON dt10.time_actual::time = (sf.actual_arrival AT TIME ZONE 'UTC')::time
 	    
-	group by
-	    sb.book_ref,
-	    dd1.date_id,
-	    dd2.date_id,
-	    dt1.time_id,
-	    dt2.time_id,
-	    sb.total_amount,
-	    st.ticket_no,
-	    dp.passenger_id,
-	    stf.flight_id,
-	    stf.fare_conditions,
-	    stf.amount,
-	    sf.flight_no,
-	    dd3.date_id,
-	    dd4.date_id,
-	    dt3.time_id,  
-	    dt4.time_id, 
-	    dd5.date_id, 
-	    dd6.date_id,
-	    dt5.time_id,  
-	    dt6.time_id,
-	    da1.airport_id,
-	    da2.airport_id,
-	    sf.status,
-	    dac.aircraft_id,
-	    dd7.date_id, 
-	    dd8.date_id,
-	    dt7.time_id,  
-	    dt8.time_id,  
-	    dd9.date_id, 
-	    dd10.date_id, 
-	    dt9.time_id,  
-	    dt10.time_id
 )
 
 INSERT INTO final.fct_booking_ticket (
@@ -171,12 +124,43 @@ INSERT INTO final.fct_booking_ticket (
     actual_arrival_date_local,
     actual_arrival_date_utc,
     actual_arrival_time_local,
-    actual_arrival_time_utc,
-    created_at,
-    updated_at
+    actual_arrival_time_utc
 )
 
 select 
 	* 
 from 
-	stg_fct_booking_ticket;
+	stg_fct_booking_ticket
+
+ON CONFLICT(book_nk, ticket_no, flight_nk) 
+DO UPDATE SET
+	book_date_local = EXCLUDED.book_date_local,
+	book_date_utc = EXCLUDED.book_date_utc,
+	book_time_local = EXCLUDED.book_time_local,
+	book_time_utc = EXCLUDED.book_time_utc,
+	total_amount = EXCLUDED.total_amount,
+	passenger_id = EXCLUDED.passenger_id,
+	fare_conditions = EXCLUDED.fare_conditions,
+	amount = EXCLUDED.amount,
+	flight_no = EXCLUDED.flight_no,
+	scheduled_departure_date_local = EXCLUDED.scheduled_departure_date_local,
+	scheduled_departure_date_utc = EXCLUDED.scheduled_departure_date_utc,
+	scheduled_departure_time_local = EXCLUDED.scheduled_departure_time_local,
+	scheduled_departure_time_utc = EXCLUDED.scheduled_departure_time_utc,
+	scheduled_arrival_date_local = EXCLUDED.scheduled_arrival_date_local,
+	scheduled_arrival_date_utc = EXCLUDED.scheduled_arrival_date_utc,
+	scheduled_arrival_time_local = EXCLUDED.scheduled_arrival_time_local,
+	scheduled_arrival_time_utc = EXCLUDED.scheduled_arrival_time_utc,
+	departure_airport = EXCLUDED.departure_airport,
+	arrival_airport = EXCLUDED.arrival_airport,
+	status = EXCLUDED.status,
+	aircraft_code = EXCLUDED.aircraft_code,
+	actual_departure_date_local = EXCLUDED.actual_departure_date_local,
+	actual_departure_date_utc = EXCLUDED.actual_departure_date_utc,
+	actual_departure_time_local = EXCLUDED.actual_departure_time_local,
+	actual_departure_time_utc = EXCLUDED.actual_departure_time_utc,
+	actual_arrival_date_local = EXCLUDED.actual_arrival_date_local,
+	actual_arrival_date_utc = EXCLUDED.actual_arrival_date_utc,
+	actual_arrival_time_local = EXCLUDED.actual_arrival_time_local,
+	actual_arrival_time_utc = EXCLUDED.actual_arrival_time_utc,
+	updated_at = CURRENT_TIMESTAMP;
