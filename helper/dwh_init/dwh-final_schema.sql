@@ -345,3 +345,17 @@ FROM
 GROUP BY sequence.minute
 ) DQ
 ORDER BY 1;
+
+
+-- Add Unique Constraints to fact tables
+ALTER TABLE final.fct_booking_ticket
+ADD CONSTRAINT fct_booking_ticket_unique UNIQUE (book_nk, ticket_no, flight_nk);
+
+ALTER TABLE final.fct_flight_activity
+ADD CONSTRAINT fct_flight_activity_unique UNIQUE (flight_nk);
+
+ALTER TABLE final.fct_seat_occupied_daily
+ADD CONSTRAINT fct_seat_occupied_daily_unique UNIQUE (date_flight, flight_nk);
+
+ALTER TABLE final.fct_boarding_pass
+ADD CONSTRAINT fct_boarding_pass_unique UNIQUE (ticket_no, flight_id, boarding_no);
