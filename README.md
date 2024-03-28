@@ -86,7 +86,7 @@
   ```
 
 ### 3. Orchestrate ELT Pipeline
-- Create schedule to read to run pipline every one hour.
+- Create schedule to run pipline every one hour.
   ```
   0 * * * * <project_dir>/elt_run.sh
   ```
