@@ -90,3 +90,13 @@
   ```
   0 * * * * <project_dir>/elt_run.sh
   ```
+
+### Result
+1. Pipeline
+![alt text](https://github.com/rahilaode/pacflight_data-pipeline-orchestration/blob/main/img_assets/luigi.png)
+
+2. Log
+![alt text](https://github.com/rahilaode/pacflight_data-pipeline-orchestration/blob/main/img_assets/log.png)
+
+3. Summary
+![alt text](https://github.com/rahilaode/pacflight_data-pipeline-orchestration/blob/main/img_assets/summary.png)
