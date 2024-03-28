@@ -28,8 +28,8 @@ CREATE TABLE stg.aircrafts_data (
 	aircraft_code bpchar(3) NOT NULL, -- Aircraft code, IATA
 	model jsonb NOT NULL, -- Aircraft model
 	"range" int4 NOT NULL, -- Maximal flying distance, km
-	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
-	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT aircrafts_pkey PRIMARY KEY (aircraft_code),
 	CONSTRAINT aircrafts_range_check CHECK ((range > 0))
 );
@@ -60,8 +60,8 @@ CREATE TABLE stg.airports_data (
 	city jsonb NOT NULL, -- City
 	coordinates point NOT NULL, -- Airport coordinates (longitude and latitude)
 	timezone text NOT NULL, -- Airport time zone
-	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
-	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT airports_data_pkey PRIMARY KEY (airport_code)
 );
 COMMENT ON TABLE stg.airports_data IS 'Airports (internal data)';
@@ -91,8 +91,8 @@ CREATE TABLE stg.bookings (
 	book_ref bpchar(6) NOT NULL, -- Booking number
 	book_date timestamptz NOT NULL, -- Booking date
 	total_amount numeric(10, 2) NOT NULL, -- Total booking cost
-	created_at timestamp NULL,
-	updated_at timestamp NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT bookings_pkey PRIMARY KEY (book_ref)
 );
 COMMENT ON TABLE stg.bookings IS 'Bookings';
@@ -127,8 +127,8 @@ CREATE TABLE stg.flights (
 	aircraft_code bpchar(3) NOT NULL, -- Aircraft code, IATA
 	actual_departure timestamptz NULL, -- Actual departure time
 	actual_arrival timestamptz NULL, -- Actual arrival time
-	created_at timestamp NULL,
-	updated_at timestamp NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT flights_check CHECK ((scheduled_arrival > scheduled_departure)),
 	CONSTRAINT flights_check1 CHECK (((actual_arrival IS NULL) OR ((actual_departure IS NOT NULL) AND (actual_arrival IS NOT NULL) AND (actual_arrival > actual_departure)))),
 	CONSTRAINT flights_flight_no_scheduled_departure_key UNIQUE (flight_no, scheduled_departure),
@@ -170,8 +170,8 @@ CREATE TABLE stg.seats (
 	aircraft_code bpchar(3) NOT NULL, -- Aircraft code, IATA
 	seat_no varchar(4) NOT NULL, -- Seat number
 	fare_conditions varchar(10) NOT NULL, -- Travel class
-	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
-	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT seats_fare_conditions_check CHECK (((fare_conditions)::text = ANY (ARRAY[('Economy'::character varying)::text, ('Comfort'::character varying)::text, ('Business'::character varying)::text]))),
 	CONSTRAINT seats_pkey PRIMARY KEY (aircraft_code, seat_no),
 	CONSTRAINT seats_aircraft_code_fkey FOREIGN KEY (aircraft_code) REFERENCES stg.aircrafts_data(aircraft_code) ON DELETE CASCADE
@@ -203,8 +203,8 @@ CREATE TABLE stg.tickets (
 	passenger_id varchar(20) NOT NULL, -- Passenger ID
 	passenger_name text NOT NULL, -- Passenger name
 	contact_data jsonb NULL, -- Passenger contact information
-	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
-	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT tickets_pkey PRIMARY KEY (ticket_no),
 	CONSTRAINT tickets_book_ref_fkey FOREIGN KEY (book_ref) REFERENCES stg.bookings(book_ref)
 );
@@ -236,8 +236,8 @@ CREATE TABLE stg.ticket_flights (
 	flight_id int4 NOT NULL, -- Flight ID
 	fare_conditions varchar(10) NOT NULL, -- Travel class
 	amount numeric(10, 2) NOT NULL, -- Travel cost
-	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
-	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT ticket_flights_amount_check CHECK ((amount >= (0)::numeric)),
 	CONSTRAINT ticket_flights_fare_conditions_check CHECK (((fare_conditions)::text = ANY (ARRAY[('Economy'::character varying)::text, ('Comfort'::character varying)::text, ('Business'::character varying)::text]))),
 	CONSTRAINT ticket_flights_pkey PRIMARY KEY (ticket_no, flight_id),
@@ -271,8 +271,8 @@ CREATE TABLE stg.boarding_passes (
 	flight_id int4 NOT NULL, -- Flight ID
 	boarding_no int4 NOT NULL, -- Boarding pass number
 	seat_no varchar(4) NOT NULL, -- Seat number
-	created_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
-	updated_at timestamp DEFAULT '2017-01-01 07:00:00'::timestamp without time zone NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT boarding_passes_flight_id_boarding_no_key UNIQUE (flight_id, boarding_no),
 	CONSTRAINT boarding_passes_flight_id_seat_no_key UNIQUE (flight_id, seat_no),
 	CONSTRAINT boarding_passes_pkey PRIMARY KEY (ticket_no, flight_id),
