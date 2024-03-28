@@ -1,39 +1,39 @@
-with 
-	stg_flights as (
-    	select *
-    	from stg.flights
+WITH 
+	stg_flights AS (
+    	SELECT *
+    	FROM stg.flights
 	),
 
-	dim_dates as (
-	    select *
-	    from final.dim_date
+	dim_dates AS (
+	    SELECT *
+	    FROM final.dim_date
 	),
 	
-	dim_airports as (
-	    select *
-	    from final.dim_airport
+	dim_airports AS (
+	    SELECT *
+	    FROM final.dim_airport
 	),
 	
-	dim_aircrafts as (
-	    select * 
-	    from final.dim_aircraft
+	dim_aircrafts AS (
+	    SELECT * 
+	    FROM final.dim_aircraft
 	),
 	
-	stg_boarding_passes as (
-	    select *
-	    from stg.boarding_passes
+	stg_boarding_passes AS (
+	    SELECT *
+	    FROM stg.boarding_passes
 	),
 	
-	stg_seats as (
-	    select *
-	    from stg.seats
+	stg_seats AS (
+	    SELECT *
+	    FROM stg.seats
 	),
 	
-	cnt_seat_occupied as (
-	    select
+	cnt_seat_occupied AS (
+	    SELECT
 	        sf.flight_id,
-	        count(seat_no) as seat_occupied
-	    from stg_flights sf
+	        count(seat_no) AS seat_occupied
+	    FROM stg_flights sf
 	    join stg_boarding_passes sbp 
 	        on sbp.flight_id = sf.flight_id
 	    where
@@ -41,28 +41,28 @@ with
 	    group by 1
 	),
 	
-	cnt_total_seats as (
-	    select
+	cnt_total_seats AS (
+	    SELECT
 	        aircraft_code,
-	        count(seat_no) as total_seat
-	    from stg_seats
+	        count(seat_no) AS total_seat
+	    FROM stg_seats
 	    group by 1
 	),
 	
-	final_fct_seat_occupied_daily as (
-	    select 
-	        dd.date_id as date_flight,
-	        sf.flight_id as flight_nk,
-	        sf.flight_no as flight_no,
-	        da1.airport_id as departure_airport,
-	        da2.airport_id as arrival_airport,
-	        dac.aircraft_id as aircraft_code,
-	        sf.status as status,
-	        cts.total_seat as total_seat,
-	        cso.seat_occupied as seat_occupied,
-	        (cts.total_seat - cso.seat_occupied) as empty_seats
+	final_fct_seat_occupied_daily AS (
+	    SELECT 
+	        dd.date_id AS date_flight,
+	        sf.flight_id AS flight_nk,
+	        sf.flight_no AS flight_no,
+	        da1.airport_id AS departure_airport,
+	        da2.airport_id AS arrival_airport,
+	        dac.aircraft_id AS aircraft_code,
+	        sf.status AS status,
+	        cts.total_seat AS total_seat,
+	        cso.seat_occupied AS seat_occupied,
+	        (cts.total_seat - cso.seat_occupied) AS empty_seats
      
-	    from stg_flights sf
+	    FROM stg_flights sf
 	    join dim_dates dd 
 	        on dd.date_actual = DATE(sf.actual_departure)
 	    join dim_airports da1
@@ -90,9 +90,9 @@ INSERT INTO final.fct_seat_occupied_daily(
 	empty_seats
 )
 
-select 
+SELECT 
 	* 
-from 
+FROM 
 	final_fct_seat_occupied_daily
 
 ON CONFLICT(date_flight, flight_nk) 
@@ -105,4 +105,18 @@ DO UPDATE SET
 	total_seat = EXCLUDED.total_seat,
 	seat_occupied = EXCLUDED.seat_occupied,
 	empty_seats = EXCLUDED.empty_seats,
-	updated_at = CURRENT_TIMESTAMP;
+    updated_at = CASE WHEN 
+                        final.fct_seat_occupied_daily.flight_no <> EXCLUDED.flight_no
+						OR final.fct_seat_occupied_daily.departure_airport <> EXCLUDED.departure_airport
+						OR final.fct_seat_occupied_daily.arrival_airport <> EXCLUDED.arrival_airport
+						OR final.fct_seat_occupied_daily.aircraft_code <> EXCLUDED.aircraft_code
+						OR final.fct_seat_occupied_daily.status <> EXCLUDED.status
+						OR final.fct_seat_occupied_daily.total_seat <> EXCLUDED.total_seat
+						OR final.fct_seat_occupied_daily.seat_occupied <> EXCLUDED.seat_occupied
+						OR final.fct_seat_occupied_daily.empty_seats <> EXCLUDED.empty_seats
+
+                THEN 
+                        CURRENT_TIMESTAMP
+                ELSE
+                        final.fct_seat_occupied_daily.updated_at
+                END;

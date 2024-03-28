@@ -22,4 +22,13 @@ DO UPDATE SET
     passenger_name = EXCLUDED.passenger_name,
     phone = EXCLUDED.phone,
     email = EXCLUDED.email,
-    updated_at = CURRENT_TIMESTAMP;
+    updated_at = CASE WHEN 
+                        final.dim_passenger.passenger_nk <> EXCLUDED.passenger_nk
+                        OR final.dim_passenger.passenger_name <> EXCLUDED.passenger_name
+                        OR final.dim_passenger.phone <> EXCLUDED.phone
+                        OR final.dim_passenger.email <> EXCLUDED.email
+                THEN 
+                        CURRENT_TIMESTAMP
+                ELSE
+                        final.dim_passenger.updated_at
+                END;

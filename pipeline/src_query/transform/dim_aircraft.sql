@@ -19,4 +19,12 @@ DO UPDATE SET
     aircraft_nk = EXCLUDED.aircraft_nk,
     model = EXCLUDED.model,
     range = EXCLUDED.range,
-    updated_at = CURRENT_TIMESTAMP;
+    updated_at = CASE WHEN 
+                        final.dim_aircraft.aircraft_nk <> EXCLUDED.aircraft_nk
+                        OR final.dim_aircraft.model <> EXCLUDED.model
+                        OR final.dim_aircraft.range <> EXCLUDED.range
+                THEN 
+                        CURRENT_TIMESTAMP
+                ELSE
+                        final.dim_aircraft.updated_at
+                END;

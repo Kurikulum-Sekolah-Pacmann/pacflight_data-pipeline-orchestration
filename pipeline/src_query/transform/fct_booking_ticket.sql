@@ -1,4 +1,4 @@
-with stg_fct_booking_ticket as (
+WITH stg_fct_booking_ticket as (
 	SELECT
 	    sb.book_ref as book_nk,
 	    dd1.date_id AS book_date_local,
@@ -163,4 +163,38 @@ DO UPDATE SET
 	actual_arrival_date_utc = EXCLUDED.actual_arrival_date_utc,
 	actual_arrival_time_local = EXCLUDED.actual_arrival_time_local,
 	actual_arrival_time_utc = EXCLUDED.actual_arrival_time_utc,
-	updated_at = CURRENT_TIMESTAMP;
+    updated_at = CASE WHEN 
+                        final.fct_booking_ticket.book_date_local <> EXCLUDED.book_date_local
+                        OR final.fct_booking_ticket.book_date_utc <> EXCLUDED.book_date_utc
+                        OR final.fct_booking_ticket.book_time_local <> EXCLUDED.book_time_local
+						OR final.fct_booking_ticket.book_time_utc <> EXCLUDED.book_time_utc
+						OR final.fct_booking_ticket.total_amount <> EXCLUDED.total_amount
+						OR final.fct_booking_ticket.passenger_id <> EXCLUDED.passenger_id
+						OR final.fct_booking_ticket.fare_conditions <> EXCLUDED.fare_conditions
+						OR final.fct_booking_ticket.amount <> EXCLUDED.amount
+						OR final.fct_booking_ticket.flight_no <> EXCLUDED.flight_no
+						OR final.fct_booking_ticket.scheduled_departure_date_local <> EXCLUDED.scheduled_departure_date_local
+						OR final.fct_booking_ticket.scheduled_departure_date_utc <> EXCLUDED.scheduled_departure_date_utc
+						OR final.fct_booking_ticket.scheduled_departure_time_local <> EXCLUDED.scheduled_departure_time_local
+						OR final.fct_booking_ticket.scheduled_departure_time_utc <> EXCLUDED.scheduled_departure_time_utc
+						OR final.fct_booking_ticket.scheduled_arrival_date_local <> EXCLUDED.scheduled_arrival_date_local
+						OR final.fct_booking_ticket.scheduled_arrival_date_utc <> EXCLUDED.scheduled_arrival_date_utc
+						OR final.fct_booking_ticket.scheduled_arrival_time_local <> EXCLUDED.scheduled_arrival_time_local
+						OR final.fct_booking_ticket.scheduled_arrival_time_utc <> EXCLUDED.scheduled_arrival_time_utc
+						OR final.fct_booking_ticket.departure_airport <> EXCLUDED.departure_airport
+						OR final.fct_booking_ticket.arrival_airport <> EXCLUDED.arrival_airport
+						OR final.fct_booking_ticket.status <> EXCLUDED.status
+						OR final.fct_booking_ticket.aircraft_code <> EXCLUDED.aircraft_code
+						OR final.fct_booking_ticket.actual_departure_date_local <> EXCLUDED.actual_departure_date_local
+						OR final.fct_booking_ticket.actual_departure_date_utc <> EXCLUDED.actual_departure_date_utc
+						OR final.fct_booking_ticket.actual_departure_time_local <> EXCLUDED.actual_departure_time_local
+						OR final.fct_booking_ticket.actual_departure_time_utc <> EXCLUDED.actual_departure_time_utc
+						OR final.fct_booking_ticket.actual_arrival_date_local <> EXCLUDED.actual_arrival_date_local
+						OR final.fct_booking_ticket.actual_arrival_date_utc <> EXCLUDED.actual_arrival_date_utc
+						OR final.fct_booking_ticket.actual_arrival_time_local <> EXCLUDED.actual_arrival_time_local
+						OR final.fct_booking_ticket.actual_arrival_time_utc <> EXCLUDED.actual_arrival_time_utc
+                THEN 
+                        CURRENT_TIMESTAMP
+                ELSE
+                        final.fct_booking_ticket.updated_at
+                END;

@@ -33,4 +33,12 @@ DO UPDATE SET
     aircraft_id = EXCLUDED.aircraft_id,
     seat_no = EXCLUDED.seat_no,
     fare_conditions = EXCLUDED.fare_conditions,
-    updated_at = CURRENT_TIMESTAMP;
+    updated_at = CASE WHEN 
+                        final.dim_seat.aircraft_id <> EXCLUDED.aircraft_id
+                        OR final.dim_seat.seat_no <> EXCLUDED.seat_no
+                        OR final.dim_seat.fare_conditions <> EXCLUDED.fare_conditions
+                THEN 
+                        CURRENT_TIMESTAMP
+                ELSE
+                        final.dim_seat.updated_at
+                END;

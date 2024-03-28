@@ -16,4 +16,13 @@ DO UPDATE SET
     city = EXCLUDED.city,
     coordinates = EXCLUDED.coordinates,
     timezone = EXCLUDED.timezone,
-    updated_at = CURRENT_TIMESTAMP;
+    updated_at = CASE WHEN 
+                        stg.airports_data.airport_name <> EXCLUDED.airport_name
+                        OR stg.airports_data.city <> EXCLUDED.city
+                        OR stg.airports_data.coordinates <> EXCLUDED.coordinates
+                        OR stg.airports_data.timezone <> EXCLUDED.timezone
+                THEN 
+                        CURRENT_TIMESTAMP
+                ELSE
+                        stg.airports_data.updated_at
+                END;
